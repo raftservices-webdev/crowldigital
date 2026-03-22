@@ -103,22 +103,22 @@ h2 em{color:var(--y);font-style:normal}
 .step:first-child .step-num{color:var(--black);font-weight:700}
 .step-title{font-family:"Bebas Neue",sans-serif;font-size:1.25rem;letter-spacing:0.05em;color:var(--white);margin-bottom:0.6rem}
 .step-desc{font-size:0.8rem;color:var(--muted);line-height:1.7}
-.contact-bg{background:#D4A800}
+.contact-bg{background:#C8960A}
 .contact-bg h2{color:#1A1A0F}
-.contact-bg .s-label{color:var(--black)}
-.contact-bg .s-label::before{background:var(--black)}
+.contact-bg .s-label{color:#1A1A0F}
+.contact-bg .s-label::before{background:#1A1A0F}
 .contact-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:5rem;margin-top:4rem;align-items:start}
-.contact-intro p{color:rgba(0,0,0,0.6);line-height:1.8;font-size:0.96rem;max-width:380px;margin-bottom:2rem}
+.contact-intro p{color:rgba(0,0,0,0.65);line-height:1.8;font-size:0.96rem;max-width:380px;margin-bottom:2rem}
 .c-detail{margin-bottom:1.25rem}
-.c-detail-label{font-family:"Space Mono",monospace;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(0,0,0,0.35);margin-bottom:0.2rem}
-.c-detail-val{font-size:0.96rem;font-weight:500;color:var(--black)}
+.c-detail-label{font-family:"Space Mono",monospace;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(0,0,0,0.4);margin-bottom:0.2rem}
+.c-detail-val{font-size:0.96rem;font-weight:500;color:#1A1A0F}
 .c-form{display:flex;flex-direction:column;gap:1rem}
 .f-group{display:flex;flex-direction:column;gap:0.3rem}
 .f-label{font-family:"Space Mono",monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(0,0,0,0.45)}
-.f-input,.f-ta{background:rgba(0,0,0,0.07);border:1px solid rgba(0,0,0,0.1);padding:0.75rem 1rem;font-family:"DM Sans",sans-serif;font-size:0.9rem;color:var(--black);outline:none;resize:none;transition:border-color 0.2s;width:100%}
+.f-input,.f-ta{background:rgba(0,0,0,0.08);border:1px solid rgba(0,0,0,0.12);padding:0.75rem 1rem;font-family:"DM Sans",sans-serif;font-size:0.9rem;color:#1A1A0F;outline:none;resize:none;transition:border-color 0.2s;width:100%}
 .f-input:focus,.f-ta:focus{border-color:rgba(0,0,0,0.35)}
-.f-input::placeholder,.f-ta::placeholder{color:rgba(0,0,0,0.28)}
-.btn-dark{background:#1A1A0F;color:#FFE600;border:none;padding:0.95rem 2.25rem;font-family:"DM Sans",sans-serif;font-size:0.8rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;transition:opacity 0.2s;align-self:flex-start}
+.f-input::placeholder,.f-ta::placeholder{color:rgba(0,0,0,0.3)}
+.btn-dark{background:#1A1A0F;color:var(--y);border:none;padding:0.95rem 2.25rem;font-family:"DM Sans",sans-serif;font-size:0.8rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;transition:opacity 0.2s;align-self:flex-start}
 .btn-dark:hover{opacity:0.82}
 footer{background:var(--black);padding:2.5rem 4rem;border-top:1px solid rgba(255,230,0,0.07);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
 .f-left{display:flex;flex-direction:column;gap:4px}
@@ -126,6 +126,15 @@ footer{background:var(--black);padding:2.5rem 4rem;border-top:1px solid rgba(255
 .f-copy{font-size:0.7rem;color:var(--muted);letter-spacing:0.05em}
 .f-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
 .f-domain{font-family:"Space Mono",monospace;font-size:0.68rem;color:var(--muted);letter-spacing:0.1em}
+.social-links{display:flex;gap:0.75rem;align-items:center;margin-top:0.5rem}
+.social-link{width:32px;height:32px;border:1px solid rgba(255,230,0,0.15);display:flex;align-items:center;justify-content:center;transition:border-color 0.2s,background 0.2s;text-decoration:none}
+.social-link:hover{border-color:var(--y);background:rgba(255,230,0,0.08)}
+.social-link svg{width:15px;height:15px;fill:var(--muted)}
+.social-link:hover svg{fill:var(--y)}
+.wa-float{position:fixed;bottom:2rem;right:2rem;z-index:999;display:flex;flex-direction:column;align-items:flex-end;gap:0.6rem}
+.wa-btn{display:flex;align-items:center;gap:0.6rem;background:#25D366;color:#fff;padding:0.7rem 1.1rem;font-family:"DM Sans",sans-serif;font-size:0.78rem;font-weight:500;text-decoration:none;box-shadow:0 4px 16px rgba(37,211,102,0.35);transition:transform 0.15s,box-shadow 0.2s;white-space:nowrap}
+.wa-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,211,102,0.45)}
+.wa-icon{width:20px;height:20px;fill:#fff;flex-shrink:0}
 @media(max-width:960px){
   nav{padding:1rem 1.5rem}.nav-links{display:none}
   section{padding:5rem 1.5rem}.hero{padding:7rem 1.5rem 4rem}.hero-bg{display:none}
@@ -135,6 +144,7 @@ footer{background:var(--black);padding:2.5rem 4rem;border-top:1px solid rgba(255
   .work-subgrid{grid-template-columns:1fr}.process-row{grid-template-columns:1fr 1fr;gap:2.5rem}
   .process-row::before{display:none}
   footer{flex-direction:column;text-align:center}.f-right{align-items:center}.hero-scroll{display:none}
+  .wa-float{bottom:1rem;right:1rem}.wa-btn{font-size:0.7rem;padding:0.6rem 0.9rem}
 }
 </style>
 </head>
@@ -144,18 +154,7 @@ footer{background:var(--black);padding:2.5rem 4rem;border-top:1px solid rgba(255
   <a href="#" class="nav-logo">
     <div class="logo-mark">
       <span class="lm-y">CR</span>
-      <span class="lm-o"><svg viewBox="0 0 52 58" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="display:block;height:100%;width:auto">
-  <defs>
-    <clipPath id="lh"><rect x="0" y="0" width="26" height="58"/></clipPath>
-    <clipPath id="rh"><rect x="26" y="0" width="26" height="58"/></clipPath>
-  </defs>
-  <rect x="0" y="0" width="26" height="58" fill="#FFE600"/>
-  <rect x="26" y="0" width="26" height="58" fill="#1E1E18"/>
-  <rect x="26" y="0" width="26" height="1" fill="rgba(255,230,0,0.15)"/>
-  <rect x="26" y="57" width="26" height="1" fill="rgba(255,230,0,0.15)"/>
-  <path clip-path="url(#lh)" d="M26 6C15.5 6 7 14.5 7 25v8C7 43.5 15.5 52 26 52s19-8.5 19-19v-8C45 14.5 36.5 6 26 6zm0 8c6.07 0 11 4.93 11 11v8c0 6.07-4.93 11-11 11S15 39.07 15 33v-8c0-6.07 4.93-11 11-11z" fill="#0A0A0A"/>
-  <path clip-path="url(#rh)" d="M26 6C15.5 6 7 14.5 7 25v8C7 43.5 15.5 52 26 52s19-8.5 19-19v-8C45 14.5 36.5 6 26 6zm0 8c6.07 0 11 4.93 11 11v8c0 6.07-4.93 11-11 11S15 39.07 15 33v-8c0-6.07 4.93-11 11-11z" fill="#FFE600"/>
-</svg></span>
+      <span class="lm-o"><svg viewBox="0 0 52 58" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="display:block;height:100%;width:auto"><defs><clipPath id="lh"><rect x="0" y="0" width="26" height="58"/></clipPath><clipPath id="rh"><rect x="26" y="0" width="26" height="58"/></clipPath></defs><rect x="0" y="0" width="26" height="58" fill="#FFE600"/><rect x="26" y="0" width="26" height="58" fill="#1E1E18"/><rect x="26" y="0" width="26" height="1" fill="rgba(255,230,0,0.15)"/><rect x="26" y="57" width="26" height="1" fill="rgba(255,230,0,0.15)"/><path clip-path="url(#lh)" d="M26 6C15.5 6 7 14.5 7 25v8C7 43.5 15.5 52 26 52s19-8.5 19-19v-8C45 14.5 36.5 6 26 6zm0 8c6.07 0 11 4.93 11 11v8c0 6.07-4.93 11-11 11S15 39.07 15 33v-8c0-6.07 4.93-11 11-11z" fill="#0A0A0A"/><path clip-path="url(#rh)" d="M26 6C15.5 6 7 14.5 7 25v8C7 43.5 15.5 52 26 52s19-8.5 19-19v-8C45 14.5 36.5 6 26 6zm0 8c6.07 0 11 4.93 11 11v8c0 6.07-4.93 11-11 11S15 39.07 15 33v-8c0-6.07 4.93-11 11-11z" fill="#FFE600"/></svg></span>
       <span class="lm-b">WL</span>
     </div>
     <span class="logo-sub">A Digital Agency</span>
@@ -260,10 +259,7 @@ footer{background:var(--black);padding:2.5rem 4rem;border-top:1px solid rgba(255
     <span style="background:#FFE600;color:#0A0A0A;padding:0 6px 0 12px;display:flex;align-items:center">CR</span>
     <span style="display:inline-flex;align-items:stretch">
       <svg viewBox="0 0 52 58" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="display:block;height:100%;width:auto">
-        <defs>
-          <clipPath id="clh"><rect x="0" y="0" width="26" height="58"/></clipPath>
-          <clipPath id="crh"><rect x="26" y="0" width="26" height="58"/></clipPath>
-        </defs>
+        <defs><clipPath id="clh"><rect x="0" y="0" width="26" height="58"/></clipPath><clipPath id="crh"><rect x="26" y="0" width="26" height="58"/></clipPath></defs>
         <rect x="0" y="0" width="26" height="58" fill="#FFE600"/>
         <rect x="26" y="0" width="26" height="58" fill="#1E1E18"/>
         <path clip-path="url(#clh)" d="M26 6C15.5 6 7 14.5 7 25v8C7 43.5 15.5 52 26 52s19-8.5 19-19v-8C45 14.5 36.5 6 26 6zm0 8c6.07 0 11 4.93 11 11v8c0 6.07-4.93 11-11 11S15 39.07 15 33v-8c0-6.07 4.93-11 11-11z" fill="#0A0A0A"/>
@@ -283,14 +279,7 @@ footer{background:var(--black);padding:2.5rem 4rem;border-top:1px solid rgba(255
       </div>
       <div class="wcard soon">
         <div class="wcard-img white-bg">
-          <svg viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg" width="220" height="126">
-  <defs><path id="arc" d="M 50,130 A 90,90 0 0,1 230,130"/></defs>
-  <text font-family="Georgia,serif" font-size="38" font-weight="700" fill="#CC2200" letter-spacing="6">
-    <textPath href="#arc" startOffset="50%" text-anchor="middle">HAPPY</textPath>
-  </text>
-  <text x="140" y="148" font-family="Georgia,serif" font-size="44" font-weight="700" fill="#CC2200" text-anchor="middle" letter-spacing="4">32</text>
-  <line x1="90" y1="155" x2="190" y2="155" stroke="#CC2200" stroke-width="2" opacity="0.3"/>
-</svg>
+          <svg viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg" width="220" height="126"><defs><path id="arc" d="M 50,130 A 90,90 0 0,1 230,130"/></defs><text font-family="Georgia,serif" font-size="38" font-weight="700" fill="#CC2200" letter-spacing="6"><textPath href="#arc" startOffset="50%" text-anchor="middle">HAPPY</textPath></text><text x="140" y="148" font-family="Georgia,serif" font-size="44" font-weight="700" fill="#CC2200" text-anchor="middle" letter-spacing="4">32</text><line x1="90" y1="155" x2="190" y2="155" stroke="#CC2200" stroke-width="2" opacity="0.3"/></svg>
           <span class="soon-badge">Coming Soon</span>
         </div>
         <div class="wcard-body">
@@ -304,7 +293,7 @@ footer{background:var(--black);padding:2.5rem 4rem;border-top:1px solid rgba(255
         <div class="wcard-body">
           <div class="work-type">Digital Strategy</div>
           <div class="wcard-name">Group Aryan</div>
-          <p class="wcard-desc">Digital strategy and online direction for Group Aryan &mdash; helping a growing business sharpen its presence on the web.</p>
+          <p class="wcard-desc">Digital strategy and online direction for Group Aryan &mdash; helping a growing business sharpen its web presence.</p>
           <span class="wcard-url">grouparyan.com</span>
         </div>
       </div>
@@ -338,11 +327,10 @@ footer{background:var(--black);padding:2.5rem 4rem;border-top:1px solid rgba(255
   <div class="contact-grid">
     <div class="contact-intro">
       <p>We&apos;d love to hear about what you&apos;re building. Drop us a note and we&apos;ll get back to you within 24 hours &mdash; no sales pitch, just a real conversation.</p>
-      <div class="c-detail"><div class="c-detail-label">Email</div><div class="c-detail-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="95fdf0f9f9fad5f6e7fae2f9f1fcf2fce1f4f9bbf6faf8">[email&#160;protected]</a></div></div>
+      <div class="c-detail"><div class="c-detail-label">Email</div><div class="c-detail-val">hello@crowldigital.com</div></div>
       <div class="c-detail"><div class="c-detail-label">Based in</div><div class="c-detail-val">Bengaluru, India</div></div>
       <div class="c-detail"><div class="c-detail-label">Website</div><div class="c-detail-val">crowldigital.com</div></div>
     </div>
-    <!-- FORMSPREE: replace YOUR_FORM_ID below with your Formspree form ID e.g. https://formspree.io/f/xeerrveg -->
     <form class="c-form" action="https://formspree.io/f/xeerrveg" method="POST">
       <input type="hidden" name="_next" value="https://crowldigital.com/thankyou.html">
       <input type="hidden" name="_subject" value="New project enquiry from crowldigital.com">
@@ -369,4 +357,33 @@ footer{background:var(--black);padding:2.5rem 4rem;border-top:1px solid rgba(255
     <span class="f-copy">&copy; 2026 Crowl Digital. Est. 2013. All rights reserved.</span>
   </div>
   <div class="f-right">
-    <span cl
+    <span class="f-domain">crowldigital.com</span>
+    <span class="f-domain">Bengaluru, India</span>
+    <div class="social-links">
+      <a href="#" class="social-link" target="_blank" title="LinkedIn">
+        <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      </a>
+      <a href="#" class="social-link" target="_blank" title="Instagram">
+        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      </a>
+      <a href="#" class="social-link" target="_blank" title="Facebook">
+        <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<!-- Floating WhatsApp -->
+<div class="wa-float">
+  <a class="wa-btn" href="https://wa.me/919035095227" target="_blank" rel="noopener">
+    <svg class="wa-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    +91 90350 95227
+  </a>
+  <a class="wa-btn" href="https://wa.me/919035095226" target="_blank" rel="noopener">
+    <svg class="wa-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    +91 90350 95226
+  </a>
+</div>
+
+</body>
+</html>
