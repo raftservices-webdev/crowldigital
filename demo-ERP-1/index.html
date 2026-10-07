@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ERP Demo</title>
+<!--
+  STANDALONE DEMO. No backend, no network calls, no real data.
+
+  Everything here is generated in the browser from the invented lists below.
+  There is no Supabase client, no API key, no fetch of any kind -- it runs from
+  a file:// path or any static host, offline, with nothing to leak.
+
+  All names are fictional: the company, the brands, the decors and every client.
+  Nothing is taken from a live installation.
+
+  To rebrand: change COMPANY below. To change the data: edit the arrays in the
+  DATA section. Nothing else needs touching.
+-->
+<style>
+:root{
+  --bg:#f5f5f3; --surface:#fff; --surface2:#fafafa; --border:rgba(0,0,0,.09);
+  --text:#1a1a18; --muted:#666; --faint:#999;
+  --accent:#185fa5; --green:#27500a; --green-bg:#eaf3de;
+  --amber:#633806; --amber-bg:#faeeda; --red:#791f1f; --red-bg:#fcebeb;
+  --blue:#0c447c; --blue-bg:#e6f1fb;
+  --mono:ui-monospace,"SF Mono",Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px}
+.bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:52px;
+  display:flex;align-items:center;gap:4px;position:sticky;top:0;z-index:20;flex-wrap:wrap}
+.brand{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.08em;margin-right:14px}
+.nav{padding:7px 12px;border-radius:7px;font-size:13px;cursor:pointer;border:none;background:none;
+  color:var(--muted);font-family:var(--sans)}
+.nav:hover{background:var(--surface2)}
+.nav.on{background:var(--accent);color:#fff}
+.who{margin-left:auto;font-size:12px;color:var(--faint)}
+main{padding:22px;max-width:1500px;margin:0 auto}
+h1{font-size:19px;font-weight:500;margin-bottom:3px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:22px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:15px}
+.card-l{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);margin-bottom:7px}
+.card-v{font-size:22px;font-weight:600;font-family:var(--mono)}
+.card-n{font-size:11px;color:var(--muted);margin-top:5px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:18px}
+.panel-t{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px}
+.wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:auto;max-height:62vh}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--faint);padding:9px 10px;border-bottom:1px solid var(--border);background:var(--surface2);
+  position:sticky;top:0;white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface2)}
+.num{text-align:right;font-family:var(--mono);font-size:12px}
+.meta{font-size:11px;color:var(--muted)}
+.pill{display:inline-block;font-size:10px;font-weight:500;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.g{background:var(--green-bg);color:var(--green)} .a{background:var(--amber-bg);color:var(--amber)}
+.r{background:var(--red-bg);color:var(--red)} .b{background:var(--blue-bg);color:var(--blue)}
+.n{background:var(--surface2);color:var(--muted)}
+.ctl{display:flex;gap:9px;margin-bottom:15px;flex-wrap:wrap;align-items:center}
+input[type=search],select,.inp{padding:9px 12px;border:1px solid var(--border);border-radius:7px;
+  font-family:var(--sans);font-size:13px;background:var(--surface);color:var(--text)}
+input[type=search]{min-width:240px;flex:1;background:rgba(24,95,165,.045);border-color:rgba(24,95,165,.25)}
+.btn{padding:9px 15px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;
+  border:1px solid var(--accent);background:var(--accent);color:#fff;font-family:var(--sans)}
+.btn.ghost{background:var(--surface);color:var(--text);border-color:var(--border)}
+.count{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.bars{display:flex;flex-direction:column;gap:9px}
+.brow{display:grid;grid-template-columns:150px 1fr 90px;gap:11px;align-items:center;font-size:12px}
+.btrack{background:var(--surface2);border-radius:4px;height:9px;overflow:hidden}
+.bfill{background:var(--accent);height:100%;border-radius:4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:900px){.two{grid-template-columns:1fr}}
+.sheet{background:#fff;max-width:900px;margin:0 auto;padding:30px;border:1px solid var(--border);
+  font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.3}
+.sheet table{border-collapse:collapse;width:100%}
+.sheet td,.sheet th{border:1px solid #333;padding:4px 7px;font-size:10.5px;text-align:left}
+.sheet h2{font-size:17px;margin-bottom:6px}
+.right{text-align:right}
+.hide{display:none!important}
+.note{font-size:11px;color:var(--faint);margin-top:9px;line-height:1.45}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <span class="brand" id="brandName">ERP</span>
+  <button class="nav on" data-s="dash">Dashboard</button>
+  <button class="nav" data-s="stock">Stock</button>
+  <button class="nav" data-s="pipe">Sales Pipeline</button>
+  <button class="nav" data-s="quote">Quotes</button>
+  <button class="nav" data-s="order">Open Orders</button>
+  <button class="nav" data-s="disp">Dispatch</button>
+  <span class="who" id="who"></span>
+</div>
+
+<main id="app"></main>
+
+<script>
+/* ═══════════════ DATA ═══════════════
+   All invented. Change freely -- nothing depends on these values. */
+
+const COMPANY = 'ERP';                  // shown top-left; blank it out if you prefer
+const USER    = 'Demo User · Management';
+
+const BRANDS = ['Altura','Nordvik','Casalino','Rivenwood','Terrano'];
+const WAREHOUSES = ['North DC','West DC','South DC','Bonded — North'];
+const DECORS = [
+  ['Pale Ash','Laminate','AC4','8mm'],      ['Smoked Oak','Laminate','AC5','8mm'],
+  ['Natural Walnut','Engineered','—','14/3mm'], ['Grey Elm','Laminate','AC4','10mm'],
+  ['Amber Teak','Engineered','—','14/2.5mm'],   ['Chalk Oak','SPC','—','6.5mm'],
+  ['Burnt Umber','Laminate','AC5','8mm'],   ['Nordic Pine','Laminate','AC4','8mm'],
+  ['Shadow Oak','SPC','—','6.5mm'],         ['Honey Birch','Engineered','—','14/3mm'],
+  ['Slate Oak','Laminate','AC5','10mm'],    ['Dune Maple','Laminate','AC4','8mm'],
+];
+const CLIENTS = [
+  'Crescent Habitat','Lakeview Realty','Orion Developers','Saffron Estates',
+  'Fairmont Projects','Juniper Build','Westgate Homes','Harbour & Vine',
+  'Alder Group','Stonebridge LLP','Marigold Spaces','Northpoint Infra',
+];
+const PEOPLE = ['R. Mehta','S. Iyer','A. Fernandes','T. Banerjee','K. Shah'];
+const STAGES = [
+  ['Scoping','n'],['Requirement Understood','n'],['Quoted','b'],['Mock-up','b'],
+  ['Final Negotiation','a'],['Verbal Conf','a'],['PO Rcvd','g'],
+];
+const MRDS = ['Q1 2027','Q2 2027','Q3 2027','Q4 2027','Q1 2028'];
+const TYPES = ['Project','Project Via Dealer','Distributor','Dealer','Retail'];
+
+/* Deterministic pseudo-random, so the demo looks identical every time it is
+   opened. A demo that reshuffles on refresh invites questions about whether
+   the numbers are real. */
+let _s = 20261007;
+const rnd = () => (_s = (_s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+const pick = a => a[Math.floor(rnd() * a.length)];
+const between = (a, b) => Math.floor(a + rnd() * (b - a));
+
+const SKUS = [];
+BRANDS.forEach((b, bi) => DECORS.forEach((d, di) => {
+  if ((bi + di) % 3 === 0) return;                  // not every brand carries every decor
+  SKUS.push({
+    code: `${b.slice(0,3).toUpperCase()}${String(100 + di * 7 + bi).padStart(4,'0')}`,
+    brand: b, decor: d[0], cat: d[1], ac: d[2], thick: d[3],
+    m2: [1.99, 2.54, 1.75, 2.53][di % 4],
+    wh: pick(WAREHOUSES), type: pick(['SD','SD','SD','OD','Proj']),
+    boxes: between(0, 420), rate: between(1450, 5600),
+  });
+}));
+
+const DEALS = CLIENTS.flatMap((c, i) => [0, 1].map(k => {
+  const s = pick(STAGES), sku = SKUS[(i * 5 + k * 3) % SKUS.length];
+  const qty = between(180, 3400);
+  return {
+    project: `${c}${k ? ' — Phase 2' : ''}`, client: c, type: pick(TYPES),
+    stage: s[0], tone: s[1], mrd: pick(MRDS), person: pick(PEOPLE),
+    sku, qty, rate: sku.rate, value: qty * sku.rate,
+    contact: `${pick(['Mr','Ms'])} ${pick(['Nair','Rao','Dutta','Pillai','Joshi'])} · ${pick(['Purchase','Projects','Site Engineer','Architect'])}`,
+  };
+}));
+
+const ORDERS = CLIENTS.slice(0, 8).map((c, i) => {
+  const sku = SKUS[(i * 9) % SKUS.length], qty = between(300, 2600);
+  const done = Math.floor(qty * [0, .25, .5, .75, .9][i % 5]);
+  return { po: `PO/${2026 + (i % 2)}/${1100 + i * 13}`, client: c, sku,
+           qty, done, pend: qty - done, rate: sku.rate };
+});
+
+const QUOTES = CLIENTS.slice(0, 7).map((c, i) => {
+  const lines = [0, 1, 2].slice(0, 1 + (i % 3)).map(k => {
+    const sku = SKUS[(i * 7 + k * 5) % SKUS.length];
+    const isAcc = k > 0;
+    const qty = isAcc ? between(40, 160) : between(90, 900);
+    const rate = isAcc ? between(210, 340) : sku.rate;
+    return { desc: isAcc ? `${sku.decor} — ${k === 1 ? 'Skirting 63mm' : 'T Profile'}`
+                         : `${sku.brand} — ${sku.decor} ${sku.thick}`,
+             spec: isAcc ? 'MDF Laminate · 2.438 m lengths' : `${sku.cat} · ${sku.ac} · ${sku.thick}`,
+             qty, unit: isAcc ? 'RM' : 'm²', rate, amt: qty * rate };
+  });
+  const sub = lines.reduce((t, l) => t + l.amt, 0);
+  return { no: `QT/2627/${String(100 + i * 4).padStart(4,'0')}`, client: c,
+           date: `2026-${String(6 + (i % 4)).padStart(2,'0')}-${String(4 + i * 3).padStart(2,'0')}`,
+           person: pick(PEOPLE), status: pick(['Draft','Sent','Sent','Converted']),
+           lines, sub, gst: Math.round(sub * .18), total: Math.round(sub * 1.18) };
+});
+
+const DISPATCH = ORDERS.slice(0, 6).map((o, i) => ({
+  no: `DA/2627/${String(40 + i * 3).padStart(3,'0')}`, client: o.client, sku: o.sku,
+  qty: Math.max(20, Math.floor(o.pend * .4)), wh: o.sku.wh,
+  status: ['Confirmed','Confirmed','Draft','Invoiced','Confirmed','Draft'][i],
+  vehicle: ['KA 01 AB 4421','MH 12 CD 8890','—','KA 05 EF 1134','TN 09 GH 7765','—'][i],
+}));
+
+/* ═══════════════ HELPERS ═══════════════ */
+const inr = n => '₹' + Math.round(n).toLocaleString('en-IN');
+const cr  = n => '₹' + (n / 1e7).toFixed(2) + ' cr';
+const qf  = n => Number(n).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+const el  = (h) => { const d = document.createElement('div'); d.innerHTML = h.trim(); return d.firstChild; };
+
+const stockValue = SKUS.reduce((t, s) => t + s.boxes * s.m2 * s.rate * .62, 0);
+const pipeValue  = DEALS.reduce((t, d) => t + d.value, 0);
+const pendValue  = ORDERS.reduce((t, o) => t + o.pend * o.rate, 0);
+const billedMtd  = ORDERS.reduce((t, o) => t + o.done * o.rate, 0) * .22;
+
+/* ═══════════════ SCREENS ═══════════════ */
+const screens = {};
+
+screens.dash = () => {
+  const byBrand = {}, byWh = {};
+  SKUS.forEach(s => {
+    const v = s.boxes * s.m2 * s.rate * .62;
+    byBrand[s.brand] = (byBrand[s.brand] || 0) + v;
+    byWh[s.wh] = (byWh[s.wh] || 0) + v;
+  });
+  const bars = (obj) => {
+    const max = Math.max(...Object.values(obj));
+    return Object.entries(obj).sort((a, b) => b[1] - a[1]).map(([k, v]) => `
+      <div class="brow"><span>${esc(k)}</span>
+        <span class="btrack"><span class="bfill" style="width:${(v / max * 100).toFixed(1)}%"></span></span>
+        <span class="num">${cr(v)}</span></div>`).join('');
+  };
+  const stages = {};
+  DEALS.forEach(d => stages[d.stage] = (stages[d.stage] || 0) + d.value);
+  return `
+    <h1>Management Dashboard</h1>
+    <div class="sub">Live position across stock, pipeline and the order book.</div>
+    <div class="cards">
+      <div class="card"><div class="card-l">Stock Value</div><div class="card-v">${cr(stockValue)}</div>
+        <div class="card-n">${SKUS.length} active SKUs · 4 locations</div></div>
+      <div class="card"><div class="card-l">Open Order Book</div><div class="card-v">${cr(pendValue)}</div>
+        <div class="card-n">${ORDERS.length} live POs</div></div>
+      <div class="card"><div class="card-l">Pipeline</div><div class="card-v">${cr(pipeValue)}</div>
+        <div class="card-n">${DEALS.length} deals in play</div></div>
+      <div class="card"><div class="card-l">Billed This Month</div><div class="card-v">${cr(billedMtd)}</div>
+        <div class="card-n">Partial by design — month in progress</div></div>
+    </div>
+    <div class="two">
+      <div class="panel"><div class="panel-t">Stock Value by Brand</div><div class="bars">${bars(byBrand)}</div></div>
+      <div class="panel"><div class="panel-t">Stock Value by Location</div><div class="bars">${bars(byWh)}</div></div>
+    </div>
+    <div class="panel"><div class="panel-t">Pipeline by Stage</div><div class="bars">${bars(stages)}</div></div>`;
+};
+
+screens.stock = () => `
+  <h1>Stock Search</h1><div class="sub">Every SKU, every location, with what is free to sell.</div>
+  <div class="ctl">
+    <input type="search" id="q" placeholder="Search decor, brand or code…">
+    <select id="fb"><option value="">All brands</option>${BRANDS.map(b => `<option>${b}</option>`).join('')}</select>
+    <select id="fw"><option value="">All locations</option>${WAREHOUSES.map(w => `<option>${w}</option>`).join('')}</select>
+    <span class="count" id="c"></span>
+  </div>
+  <div class="wrap"><table><thead><tr>
+    <th>SKU</th><th>Decor</th><th>Brand</th><th>Category</th><th>Location</th>
+    <th>Type</th><th class="num">Boxes</th><th class="num">m²</th><th class="num">Rate / m²</th>
+  </tr></thead><tbody id="rows"></tbody></table></div>
+  <div class="note">Stock type separates regular stock from goods on order and project-committed
+    material, so what looks available really is available.</div>`;
+
+screens.pipe = () => `
+  <h1>Sales Pipeline</h1><div class="sub">Every live opportunity, with what is needed and when.</div>
+  <div class="ctl">
+    <input type="search" id="q" placeholder="Search project, client or product…">
+    <select id="fs"><option value="">All stages</option>${STAGES.map(s => `<option>${s[0]}</option>`).join('')}</select>
+    <select id="fm"><option value="">All MRD</option>${MRDS.map(m => `<option>${m}</option>`).join('')}</select>
+    <select id="ft"><option value="">All types</option>${TYPES.map(t => `<option>${t}</option>`).join('')}</select>
+    <span class="count" id="c"></span>
+  </div>
+  <div class="wrap"><table><thead><tr>
+    <th>Project</th><th>Type</th><th>Stage</th><th>MRD</th><th>Product</th>
+    <th>Contact</th><th>Owner</th><th class="num">Value</th>
+  </tr></thead><tbody id="rows"></tbody></table></div>
+  <div class="note">MRD is the material required date. Filter by it and print, and the sheet
+    states which quarter it covers — that is the monthly review document.</div>`;
+
+screens.quote = () => `
+  <h1>Quotations</h1><div class="sub">Priced from the item master, so a quote cannot name something that does not exist.</div>
+  <div class="ctl"><input type="search" id="q" placeholder="Search quote or client…"><span class="count" id="c"></span></div>
+  <div class="wrap"><table><thead><tr>
+    <th>Quote No.</th><th>Client</th><th>Date</th><th>Owner</th><th>Status</th>
+    <th class="num">Lines</th><th class="num">Total</th><th></th>
+  </tr></thead><tbody id="rows"></tbody></table></div>
+  <div id="sheet" class="hide" style="margin-top:20px"></div>`;
+
+screens.order = () => `
+  <h1>Open Orders</h1><div class="sub">What is still owed against every purchase order.</div>
+  <div class="ctl"><input type="search" id="q" placeholder="Search PO or client…"><span class="count" id="c"></span></div>
+  <div class="wrap"><table><thead><tr>
+    <th>PO</th><th>Client</th><th>Product</th><th class="num">Ordered</th>
+    <th class="num">Dispatched</th><th class="num">Pending</th><th class="num">Pending Value</th><th>Progress</th>
+  </tr></thead><tbody id="rows"></tbody></table></div>
+  <div class="note">Confirming a dispatch reduces stock and this order in one step, so the two
+    can never drift apart.</div>`;
+
+screens.disp = () => `
+  <h1>Dispatch Advice</h1><div class="sub">The instruction to release material, and the record that it moved.</div>
+  <div class="wrap"><table><thead><tr>
+    <th>Advice No.</th><th>Client</th><th>Product</th><th>From</th>
+    <th class="num">Qty</th><th>Vehicle</th><th>Status</th>
+  </tr></thead><tbody>${DISPATCH.map(d => `
+    <tr><td><span class="meta" style="font-family:var(--mono)">${d.no}</span></td>
+      <td>${esc(d.client)}</td>
+      <td>${esc(d.sku.decor)}<div class="meta">${esc(d.sku.brand)} · ${d.sku.code}</div></td>
+      <td>${esc(d.wh)}</td><td class="num">${qf(d.qty)} m²</td>
+      <td class="meta">${d.vehicle}</td>
+      <td><span class="pill ${d.status === 'Confirmed' ? 'g' : d.status === 'Invoiced' ? 'b' : 'n'}">${d.status}</span></td></tr>`).join('')}
+  </tbody></table></div>
+  <div class="note">A confirmed advice can be reversed by an administrator — stock goes back, the
+    order reopens, and the correction is attributed.</div>`;
+
+/* ═══════════════ RENDER + FILTERS ═══════════════ */
+function tone(s){ return (STAGES.find(x => x[0] === s) || ['','n'])[1] }
+
+const filters = {
+  stock(){
+    const q = (document.getElementById('q').value || '').toLowerCase();
+    const b = document.getElementById('fb').value, w = document.getElementById('fw').value;
+    const rows = SKUS.filter(s =>
+      (!q || [s.code, s.decor, s.brand].join(' ').toLowerCase().includes(q)) &&
+      (!b || s.brand === b) && (!w || s.wh === w));
+    document.getElementById('rows').innerHTML = rows.map(s => `
+      <tr><td><span style="font-family:var(--mono);font-size:12px">${s.code}</span></td>
+        <td>${esc(s.decor)}</td><td>${esc(s.brand)}</td>
+        <td>${esc(s.cat)}<div class="meta">${s.ac !== '—' ? s.ac + ' · ' : ''}${s.thick}</div></td>
+        <td>${esc(s.wh)}</td>
+        <td><span class="pill ${s.type === 'SD' ? 'g' : s.type === 'OD' ? 'a' : 'b'}">${s.type}</span></td>
+        <td class="num">${s.boxes}</td><td class="num">${qf(s.boxes * s.m2)}</td>
+        <td class="num">${inr(s.rate)}</td></tr>`).join('')
+      || `<tr><td colspan="9" style="padding:40px;text-align:center;color:var(--muted)">Nothing matches those filters.</td></tr>`;
+    document.getElementById('c').textContent = `${rows.length} of ${SKUS.length}`;
+  },
+  pipe(){
+    const q = (document.getElementById('q').value || '').toLowerCase();
+    const s = document.getElementById('fs').value, m = document.getElementById('fm').value,
+          t = document.getElementById('ft').value;
+    const rows = DEALS.filter(d =>
+      (!q || [d.project, d.client, d.sku.decor, d.sku.brand].join(' ').toLowerCase().includes(q)) &&
+      (!s || d.stage === s) && (!m || d.mrd === m) && (!t || d.type === t));
+    document.getElementById('rows').innerHTML = rows.map(d => `
+      <tr><td><b>${esc(d.project)}</b><div class="meta">${esc(d.client)}</div></td>
+        <td class="meta">${esc(d.type)}</td>
+        <td><span class="pill ${tone(d.stage)}">${esc(d.stage)}</span></td>
+        <td class="meta">${d.mrd}</td>
+        <td>${esc(d.sku.brand)} ${esc(d.sku.decor)}
+          <div class="meta">${qf(d.qty)} m² @ ${inr(d.rate)}</div></td>
+        <td class="meta">${esc(d.contact)}</td>
+        <td class="meta">${esc(d.person)}</td>
+        <td class="num">${inr(d.value)}</td></tr>`).join('')
+      || `<tr><td colspan="8" style="padding:40px;text-align:center;color:var(--muted)">Nothing matches those filters.</td></tr>`;
+    const tot = rows.reduce((a, d) => a + d.value, 0);
+    document.getElementById('c').textContent = `${rows.length} deals · ${cr(tot)}`;
+  },
+  quote(){
+    const q = (document.getElementById('q').value || '').toLowerCase();
+    const rows = QUOTES.filter(x => !q || [x.no, x.client].join(' ').toLowerCase().includes(q));
+    document.getElementById('rows').innerHTML = rows.map((x, i) => `
+      <tr><td><span style="font-family:var(--mono);font-size:12px">${x.no}</span></td>
+        <td>${esc(x.client)}</td><td class="meta">${x.date}</td><td class="meta">${esc(x.person)}</td>
+        <td><span class="pill ${x.status === 'Converted' ? 'g' : x.status === 'Sent' ? 'b' : 'n'}">${x.status}</span></td>
+        <td class="num">${x.lines.length}</td><td class="num">${inr(x.total)}</td>
+        <td><button class="btn ghost" style="padding:5px 11px;font-size:12px" data-qi="${QUOTES.indexOf(x)}">View</button></td></tr>`).join('');
+    document.getElementById('c').textContent = `${rows.length} of ${QUOTES.length}`;
+    document.querySelectorAll('[data-qi]').forEach(b =>
+      b.onclick = () => showQuote(QUOTES[+b.dataset.qi]));
+  },
+  order(){
+    const q = (document.getElementById('q').value || '').toLowerCase();
+    const rows = ORDERS.filter(o => !q || [o.po, o.client].join(' ').toLowerCase().includes(q));
+    document.getElementById('rows').innerHTML = rows.map(o => {
+      const pc = (o.done / o.qty * 100).toFixed(0);
+      return `<tr><td><span style="font-family:var(--mono);font-size:12px">${o.po}</span></td>
+        <td>${esc(o.client)}</td>
+        <td>${esc(o.sku.decor)}<div class="meta">${esc(o.sku.brand)} · ${o.sku.code}</div></td>
+        <td class="num">${qf(o.qty)}</td><td class="num">${qf(o.done)}</td>
+        <td class="num"><b>${qf(o.pend)}</b></td><td class="num">${inr(o.pend * o.rate)}</td>
+        <td><span class="btrack" style="display:block;width:110px"><span class="bfill" style="width:${pc}%"></span></span>
+          <span class="meta">${pc}% dispatched</span></td></tr>`;
+    }).join('');
+    const tot = rows.reduce((a, o) => a + o.pend * o.rate, 0);
+    document.getElementById('c').textContent = `${rows.length} POs · ${cr(tot)} pending`;
+  },
+};
+
+function showQuote(x){
+  const box = document.getElementById('sheet');
+  box.className = '';
+  box.innerHTML = `
+    <div class="sheet">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div><h2>Quotation</h2><div style="color:#666">No. ${x.no} · ${x.date}</div></div>
+        <div class="right" style="font-size:10px;color:#666">Original</div>
+      </div>
+      <table style="margin-bottom:0"><tr>
+        <td style="width:50%"><b>Seller</b><br>Demonstration entity<br>GSTIN and bank details print here</td>
+        <td><b>Buyer</b><br>${esc(x.client)}<br>Prepared by ${esc(x.person)}</td>
+      </tr></table>
+      <table style="margin-top:9px">
+        <thead><tr><th>Sl</th><th>Description</th><th class="right">Qty</th>
+          <th class="right">Rate</th><th class="right">Amount</th></tr></thead>
+        <tbody>${x.lines.map((l, i) => `<tr>
+          <td>${i + 1}</td>
+          <td>${esc(l.desc)}<div style="color:#666;font-size:9.5px">${esc(l.spec)}</div></td>
+          <td class="right">${qf(l.qty)} ${l.unit}</td>
+          <td class="right">${inr(l.rate)}/${l.unit}</td>
+          <td class="right">${inr(l.amt)}</td></tr>`).join('')}</tbody>
+      </table>
+      <table style="margin-top:0">
+        <tr><td colspan="4" style="width:80%">Sub Total</td><td class="right">${inr(x.sub)}</td></tr>
+        <tr><td colspan="4">GST 18%</td><td class="right">${inr(x.gst)}</td></tr>
+        <tr><td colspan="4"><b>Total</b></td><td class="right"><b>${inr(x.total)}</b></td></tr>
+      </table>
+      <div style="margin-top:9px"><b>Terms:</b> Payment before dispatch. Quantities indicative,
+        subject to site conditions. Billing on measured quantity.</div>
+    </div>
+    <div class="note">Accessories quote in running metres and round up to whole lengths, because a
+      length cannot be cut in half — the same rule that rounds flooring up to whole boxes.</div>`;
+  box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+let cur = 'dash';
+function go(s){
+  cur = s;
+  document.querySelectorAll('.nav').forEach(b => b.classList.toggle('on', b.dataset.s === s));
+  document.getElementById('app').innerHTML = screens[s]();
+  if (filters[s]) {
+    filters[s]();
+    ['q','fb','fw','fs','fm','ft'].forEach(id => {
+      const n = document.getElementById(id);
+      if (n) n.addEventListener(n.tagName === 'SELECT' ? 'change' : 'input', filters[s]);
+    });
+  }
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.nav').forEach(b => b.onclick = () => go(b.dataset.s));
+document.getElementById('brandName').textContent = COMPANY;
+document.getElementById('who').textContent = USER;
+go('dash');
+</script>
+</body>
+</html>
