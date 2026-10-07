@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cold storage inventory demo | Crowl Digital</title>
+<meta name="description" content="Interactive demo of a multi-location cold storage inventory system: item master with pack sizes, temperature zones, lot expiry, first-expiry-first-out picking. Sample data only.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#ECEEEF; --surface:#F7F8F8; --ink:#1A262D; --ink-2:#4E5E68; --rule:#CBD1D5;
+  --yellow:#F2B705; --blue:#2D78B7;
+  --accent:var(--yellow); --accent-ink:#1A262D;
+  --ok:#2E7D5B; --warn:#A8660A; --bad:#BF3B27;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#14191D; --surface:#1B2227; --ink:#E7ECEE; --ink-2:#9AA8B0; --rule:#2F3A41;
+    --blue:#5BA6E0; --ok:#4DB48A; --warn:#E0A63B; --bad:#EA775F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14191D; --surface:#1B2227; --ink:#E7ECEE; --ink-2:#9AA8B0; --rule:#2F3A41;
+  --blue:#5BA6E0; --ok:#4DB48A; --warn:#E0A63B; --bad:#EA775F;
+  color-scheme:dark;
+}
+body[data-mode="cold"]{ --accent:var(--blue); --accent-ink:#FFFFFF; }
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) body[data-mode="cold"]{ --accent-ink:#0F1418; }
+}
+:root[data-theme="dark"] body[data-mode="cold"]{ --accent-ink:#0F1418; }
+
+html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+*,*::before,*::after{ box-sizing:inherit; }
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:400 15px/1.5 Barlow,"Helvetica Neue",Arial,sans-serif;
+  font-variant-numeric:tabular-nums;
+}
+h1,h2,h3{ font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif; font-weight:600; margin:0; letter-spacing:.01em; }
+button{ font:inherit; color:inherit; cursor:pointer; }
+:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; }
+.wrap{ max-width:1240px; margin:0 auto; padding:0 20px; }
+
+/* top */
+.top{ border-bottom:2px solid var(--ink); }
+.top-in{ display:flex; flex-wrap:wrap; gap:14px 32px; align-items:flex-end; justify-content:space-between; padding:22px 20px 16px; }
+.brand h1{ font-size:38px; line-height:1; font-weight:700; }
+.brand p{ margin:8px 0 0; color:var(--ink-2); max-width:58ch; }
+.seg{ display:flex; border:2px solid var(--ink); }
+.seg button{ background:transparent; border:0; padding:9px 16px; font-weight:500; }
+.seg button + button{ border-left:2px solid var(--ink); }
+.seg button[aria-pressed="true"]{ background:var(--accent); color:var(--accent-ink); font-weight:600; }
+
+/* shell */
+.shell{ display:grid; grid-template-columns:260px minmax(0,1fr); gap:32px; padding:24px 0 36px; }
+.bays{ display:flex; flex-direction:column; border-top:2px solid var(--ink); align-self:start; }
+.bay{
+  display:grid; grid-template-columns:auto 1fr; gap:6px 12px; align-items:center; text-align:left;
+  background:none; border:0; border-bottom:1px solid var(--rule); border-left:6px solid transparent;
+  padding:12px 8px 12px 10px;
+}
+.bay[aria-pressed="true"]{ border-left-color:var(--accent); background:var(--surface); }
+.code{ font:700 21px/1 "Barlow Condensed","Arial Narrow",Arial,sans-serif; border:2px solid var(--ink); padding:3px 6px; min-width:58px; text-align:center; }
+.bay .nm{ font-weight:500; line-height:1.2; }
+.bay small{ display:block; color:var(--ink-2); font-size:13px; }
+.meter{ grid-column:1 / -1; height:6px; background:var(--rule); }
+.meter i{ display:block; height:100%; background:var(--ink-2); transition:width .35s ease; }
+.meter.hot i{ background:var(--bad); }
+
+/* tabs */
+.tabs{ display:flex; flex-wrap:wrap; gap:4px; border-bottom:2px solid var(--ink); }
+.tabs button{ background:transparent; border:0; padding:9px 18px; font-weight:500; font-size:16px; }
+.tabs button[aria-selected="true"]{ background:var(--ink); color:var(--bg); font-weight:600; }
+.view{ padding-top:22px; }
+.view h2{ font-size:28px; line-height:1.1; }
+.sub{ color:var(--ink-2); margin:4px 0 0; }
+
+/* kpis */
+.kpis{ display:grid; grid-template-columns:repeat(4,1fr); border-top:2px solid var(--ink); border-bottom:1px solid var(--rule); margin-top:18px; }
+.kpi{ padding:14px 16px 12px 0; }
+.kpi + .kpi{ padding-left:16px; border-left:1px solid var(--rule); }
+.kpi b{ display:block; font:600 40px/1 "Barlow Condensed","Arial Narrow",Arial,sans-serif; }
+.kpi span{ color:var(--ink-2); font-size:14px; }
+
+.split{ display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:36px; margin-top:28px; }
+.split h3{ font-size:22px; margin-bottom:8px; }
+.list{ list-style:none; margin:0; padding:0; border-top:1px solid var(--rule); }
+.list li{ padding:10px 0 10px 14px; border-bottom:1px solid var(--rule); border-left:5px solid var(--rule); }
+.list li.bad{ border-left-color:var(--bad); }
+.list li.warn{ border-left-color:var(--warn); }
+.list li b{ font-weight:600; }
+.list li small{ display:block; color:var(--ink-2); font-size:14px; }
+.empty{ padding:14px 0; color:var(--ink-2); }
+
+/* tables */
+.tools{ display:flex; flex-wrap:wrap; gap:12px 20px; align-items:center; margin:16px 0 10px; }
+.tools label.chk{ display:flex; gap:8px; align-items:center; }
+.scroll{ overflow-x:auto; border-top:2px solid var(--ink); }
+.tbl{ width:100%; border-collapse:collapse; min-width:640px; }
+.tbl th{ text-align:left; font-weight:600; font-size:14px; color:var(--ink-2); padding:9px 10px; border-bottom:2px solid var(--ink); white-space:nowrap; }
+.tbl td{ padding:9px 10px; border-bottom:1px solid var(--rule); vertical-align:top; }
+.tbl .n{ text-align:right; }
+.tbl td small{ display:block; color:var(--ink-2); font-size:13px; }
+.tbl tr.warn td:first-child{ box-shadow:inset 5px 0 var(--warn); }
+.tbl tr.bad td:first-child{ box-shadow:inset 5px 0 var(--bad); }
+.tag{ display:inline-block; font-size:13px; font-weight:600; padding:0 6px; border:1.5px solid currentColor; margin-left:6px; }
+.tag.warn{ color:var(--warn); } .tag.bad{ color:var(--bad); }
+.link{ background:none; border:0; padding:0; text-decoration:underline; color:var(--ink); font-size:14px; }
+
+/* forms */
+.move{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:40px; margin-top:20px; }
+.fld{ display:block; margin-bottom:14px; }
+.fld > span{ display:block; font-weight:600; font-size:14px; margin-bottom:4px; }
+select,input[type="text"],input[type="number"],input[type="date"],input[type="search"]{
+  width:100%; font:inherit; color:var(--ink); background:var(--surface);
+  border:1.5px solid var(--ink-2); padding:9px 10px; border-radius:0;
+}
+.row2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.hint{ color:var(--ink-2); font-size:14px; margin:0 0 14px; }
+.plan{ border-left:6px solid var(--accent); padding:2px 0 2px 20px; align-self:start; }
+.plan h3{ font-size:22px; margin-bottom:8px; }
+.plan ul{ margin:0 0 14px; padding-left:18px; }
+.plan li{ margin-bottom:4px; }
+.msg{ margin:0 0 6px; font-weight:500; }
+.msg.bad{ color:var(--bad); } .msg.info{ color:var(--ink-2); font-weight:400; }
+.btn{ background:var(--accent); color:var(--accent-ink); border:2px solid var(--ink); padding:10px 22px; font-weight:600; font-size:16px; }
+.btn[disabled]{ background:transparent; color:var(--ink-2); border-color:var(--rule); cursor:not-allowed; }
+
+.toast{ position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%);
+  background:var(--ink); color:var(--bg); padding:10px 18px; max-width:calc(100vw - 32px); z-index:5; opacity:0; pointer-events:none; transition:opacity .2s; }
+.toast.on{ opacity:1; }
+
+.foot{ border-top:1px solid var(--rule); padding:16px 0 28px; color:var(--ink-2); font-size:14px; display:flex; flex-wrap:wrap; gap:8px 24px; justify-content:space-between; }
+
+@media (max-width:900px){
+  .shell{ grid-template-columns:1fr; gap:18px; }
+  .bays{ flex-direction:row; overflow-x:auto; border-top:0; }
+  .bay{ min-width:210px; border-bottom:0; border-left:0; border-top:6px solid transparent; border-right:1px solid var(--rule); }
+  .bay[aria-pressed="true"]{ border-top-color:var(--accent); }
+  .kpis{ grid-template-columns:repeat(2,1fr); }
+  .kpi b{ font-size:32px; }
+  .kpi:nth-child(3){ padding-left:0; border-left:0; }
+  .kpi:nth-child(n+3){ border-top:1px solid var(--rule); }
+  .split,.move{ grid-template-columns:1fr; gap:26px; }
+}
+@media (prefers-reduced-motion:reduce){ .meter i,.toast{ transition:none; } }
+</style>
+</head>
+<body data-mode="cold">
+<header class="top">
+  <div class="wrap top-in">
+    <div class="brand">
+      <h1>Stockroom</h1>
+      <p>A sample inventory system for a cold storage operator with chambers across more than one site. Add an item, receive it, move it, and watch every figure update. Try sending frozen goods into a cool chamber.</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="shell">
+    <aside class="bays" id="bays" aria-label="Locations"></aside>
+    <main>
+      <nav class="tabs" id="tabs" role="tablist" aria-label="Sections"></nav>
+      <section class="view" id="view"></section>
+    </main>
+  </div>
+  <footer class="foot">
+    <span>Sample build by <a href="https://crowldigital.com" style="color:inherit">Crowl Digital</a>. Every product, lot and number here is made up for demonstration.</span>
+    <button class="link" data-act="reset">Reset this demo</button>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+var DAY=864e5, T0=new Date(); T0.setHours(0,0,0,0);
+function day(n){ return T0.getTime()+n*DAY; }
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function num(n){ return Math.round(n).toLocaleString('en-IN'); }
+function num2(n){ return (Math.round(n*100)/100).toLocaleString('en-IN'); }
+function inr(n){ n=Math.round(n); if(n>=1e7) return '₹'+(n/1e7).toFixed(2)+' Cr'; if(n>=1e5) return '₹'+(n/1e5).toFixed(2)+' L'; return '₹'+n.toLocaleString('en-IN'); }
+function inrFull(n){ return '₹'+Math.round(n).toLocaleString('en-IN'); }
+function inrFine(n){ return '₹'+(Math.round(n*100)/100).toLocaleString('en-IN'); }
+function dstr(ms){ return new Date(ms).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
+function tstr(ms){ return new Date(ms).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:false}); }
+function iso(ms){ var d=new Date(ms); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function $(s){ return document.querySelector(s); }
+
+/* Pack size and price basis.
+   pack / pu : what one counted unit holds -- a carton of peas is 10 kg.
+   basis     : what the SUPPLIER quotes on. Some trades price the carton,
+               others price the kilo. Both are normal, and a system that
+               assumes one of them makes somebody do arithmetic on every
+               receipt -- which is where the errors come from.
+   Stock is always counted and valued per counted unit whichever basis
+   applies; the basis only decides what you type when goods arrive. */
+function one(u){ return String(u||'').replace(/s$/,''); }
+function content(k){ return k.pack?num2(k.pack)+' '+k.pu+' per '+one(k.uom):''; }
+function perContent(k){ return k.pack?k.wac/k.pack:null; }
+function basisLabel(k){ return k.basis==='content'?('per '+k.pu):('per '+one(k.uom)); }
+
+var ZONES={frozen:'Frozen, −18°C',chilled:'Chilled, 2 to 4°C',cool:'Cool, 12 to 14°C'};
+var MODES={
+  panels:{key:'panels',label:'Panels and flooring',cold:false,lotLabel:'Shade lot',rule:'oldest lot first',sub:'Wood panels, flooring and doors held across warehouses, with shade lots and project reservations.'},
+  cold:{key:'cold',label:'Cold storage',cold:true,lotLabel:'Lot',rule:'first expiry first out',sub:'Frozen, chilled and cool chambers across two sites, with expiry tracking and temperature-zone checks.'}
+};
+var uid=1, S=null, UI=null;
+
+function seed(key){
+  uid=1;
+  function I(sku,wh,lot,qty,rcv,exp,blocked,project){ return {id:uid++,sku:sku,wh:wh,lot:lot,qty:qty,blocked:blocked||0,project:project||'',rcv:day(rcv),exp:exp==null?null:day(exp)}; }
+  function L(d,type,sku,qty,from,to,detail){ return {t:Date.now()+d*DAY,type:type,sku:sku,qty:qty,from:from||'',to:to||'',detail:detail}; }
+  if(key==='panels'){
+    return {key:key,
+      warehouses:[{id:'CW',name:'Central Warehouse',cap:80},{id:'ND',name:'North Depot',cap:40},{id:'PY',name:'Port Yard',cap:30}],
+      skus:[
+        {id:'LAM-OAK-08',name:'Laminate flooring, natural oak 8mm',uom:'sqm',pp:90,wac:612,reorder:600,pack:1.99,pu:'sqm',basis:'content'},
+        {id:'LAM-WAL-12',name:'Laminate flooring, walnut 12mm',uom:'sqm',pp:70,wac:780,reorder:400,pack:1.75,pu:'sqm',basis:'content'},
+        {id:'ENG-OAK-14',name:'Engineered flooring, oak 14mm',uom:'sqm',pp:60,wac:2150,reorder:300,pack:2.53,pu:'sqm',basis:'content'},
+        {id:'HDF-18',name:'HDF board 18mm, 8 x 4 ft',uom:'sheets',pp:40,wac:1480,reorder:400,pack:2.97,pu:'sqm',basis:'pack'},
+        {id:'DOOR-FL',name:'Flush door shutter, 2100 x 900',uom:'pcs',pp:25,wac:3250,reorder:100,pack:1,pu:'pcs',basis:'pack'},
+        {id:'WALL-FLT',name:'Fluted wall panel, 2.4 m',uom:'pcs',pp:120,wac:1120,reorder:300,pack:2.4,pu:'metres',basis:'pack'},
+        {id:'SKIRT-80',name:'Skirting 80mm, 2.4 m',uom:'pcs',pp:300,wac:265,reorder:500,pack:2.4,pu:'metres',basis:'pack'},
+        {id:'UL-FOAM',name:'Underlay foam 2mm, roll',uom:'rolls',pp:40,wac:1450,reorder:200,pack:15,pu:'sqm',basis:'pack'}
+      ],
+      items:[
+        I('LAM-OAK-08','CW','SH-2405',810,-60),
+        I('LAM-OAK-08','CW','SH-2409',450,-20,null,270,'Lakeview Residences'),
+        I('LAM-OAK-08','ND','SH-2405',360,-45),
+        I('LAM-OAK-08','PY','SH-2411',900,-6),
+        I('LAM-WAL-12','CW','SH-2408',560,-35),
+        I('LAM-WAL-12','PY','SH-2410',280,-12),
+        I('ENG-OAK-14','CW','SH-2403',120,-80,null,60,'Orchid Clinic'),
+        I('ENG-OAK-14','ND','SH-2403',60,-80),
+        I('HDF-18','CW','BT-0912',640,-30),
+        I('HDF-18','PY','BT-0918',320,-9),
+        I('DOOR-FL','CW','DR-118',150,-25),
+        I('DOOR-FL','ND','DR-120',75,-14,null,20,'Lakeview Residences'),
+        I('WALL-FLT','CW','WP-044',480,-18),
+        I('WALL-FLT','ND','WP-046',240,-7),
+        I('WALL-FLT','PY','WP-044',360,-18),
+        I('SKIRT-80','CW','SK-210',900,-40),
+        I('SKIRT-80','PY','SK-212',600,-11),
+        I('UL-FOAM','CW','UF-077',120,-22),
+        I('UL-FOAM','ND','UF-077',40,-22)
+      ],
+      log:[
+        L(-0.6,'Receive','LAM-OAK-08',900,'','PY','Lot SH-2411 at ₹612'),
+        L(-1.4,'Transfer','HDF-18',80,'CW','ND','Replenishing the depot'),
+        L(-2.2,'Issue','DOOR-FL',30,'CW','','Dispatched to site'),
+        L(-3.1,'Reserve','ENG-OAK-14',60,'CW','','Held for Orchid Clinic')
+      ]};
+  }
+  return {key:key,
+    warehouses:[
+      {id:'FRZ-1',name:'Site 1 Frozen',cap:80,zone:'frozen'},
+      {id:'CHL-1',name:'Site 1 Chilled',cap:50,zone:'chilled'},
+      {id:'COL-1',name:'Site 1 Cool',cap:20,zone:'cool'},
+      {id:'FRZ-2',name:'Site 2 Frozen',cap:60,zone:'frozen'}],
+    skus:[
+      {id:'PEA-FRZ',name:'Green peas, frozen, 10 kg',uom:'cartons',pp:80,wac:640,reorder:300,zone:'frozen',shelf:300,pack:10,pu:'kg',basis:'pack'},
+      {id:'FRY-FRZ',name:'French fries, frozen, 12.5 kg',uom:'cartons',pp:60,wac:1450,reorder:200,zone:'frozen',shelf:270,pack:12.5,pu:'kg',basis:'pack'},
+      {id:'PRN-FRZ',name:'Prawns, frozen, 5 kg',uom:'cartons',pp:100,wac:2900,reorder:250,zone:'frozen',shelf:240,pack:5,pu:'kg',basis:'content'},
+      {id:'PNR-CHL',name:'Paneer block, 5 kg',uom:'cartons',pp:90,wac:1500,reorder:150,zone:'chilled',shelf:30,pack:5,pu:'kg',basis:'content'},
+      {id:'CRD-CHL',name:'Curd cups, 12 x 400 g',uom:'cartons',pp:70,wac:480,reorder:200,zone:'chilled',shelf:21,pack:12,pu:'cups',basis:'pack'},
+      {id:'APL-COL',name:'Apples, 18 kg carton',uom:'cartons',pp:50,wac:1900,reorder:100,zone:'cool',shelf:60,pack:18,pu:'kg',basis:'content'},
+      {id:'GRP-COL',name:'Grapes, 4.5 kg box',uom:'boxes',pp:120,wac:780,reorder:200,zone:'cool',shelf:35,pack:4.5,pu:'kg',basis:'pack'}
+    ],
+    items:[
+      I('PEA-FRZ','FRZ-1','L-2601',1200,-70,230),
+      I('PEA-FRZ','FRZ-2','L-2603',640,-30,270),
+      I('FRY-FRZ','FRZ-1','L-2559',480,-90,150),
+      I('FRY-FRZ','FRZ-1','L-2606',360,-15,255),
+      I('PRN-FRZ','FRZ-1','L-2548',200,-120,11),
+      I('PRN-FRZ','FRZ-2','L-2607',500,-10,230),
+      I('PNR-CHL','CHL-1','L-2608',90,-27,3),
+      I('PNR-CHL','CHL-1','L-2612',200,-6,24),
+      I('CRD-CHL','CHL-1','L-2602',40,-26,-2),
+      I('CRD-CHL','CHL-1','L-2609',320,-14,7),
+      I('CRD-CHL','CHL-1','L-2611',140,-2,19),
+      I('APL-COL','COL-1','L-2590',420,-40,20),
+      I('APL-COL','COL-1','L-2605',260,-12,48),
+      I('GRP-COL','COL-1','L-2604',150,-8,27)
+    ],
+    log:[
+      L(-0.5,'Receive','PRN-FRZ',500,'','FRZ-2','Lot L-2607 at ₹2,900'),
+      L(-1.6,'Transfer','PEA-FRZ',160,'FRZ-1','FRZ-2','Balancing the two sites'),
+      L(-2.3,'Issue','CRD-CHL',120,'CHL-1','','Dispatched to retailer'),
+      L(-3.4,'Receive','GRP-COL',150,'','COL-1','Lot L-2604 at ₹780')
+    ]};
+}
+
+/* helpers */
+function M(){ return MODES[S.key]; }
+function sku(id){ return S.skus.filter(function(k){return k.id===id;})[0]; }
+function wh(id){ return S.warehouses.filter(function(w){return w.id===id;})[0]; }
+function avail(it){ return it.qty-it.blocked; }
+function expired(it){ return M().cold && it.exp!=null && it.exp<T0.getTime(); }
+function dispatchable(it){ return expired(it)?0:avail(it); }
+function totalQty(id){ return S.items.filter(function(i){return i.sku===id;}).reduce(function(a,i){return a+i.qty;},0); }
+function positions(it){ return Math.ceil(it.qty/sku(it.sku).pp); }
+function used(whId){ return S.items.filter(function(i){return i.wh===whId;}).reduce(function(a,i){return a+positions(i);},0); }
+function scoped(){ return UI.wh==='all'?S.items:S.items.filter(function(i){return i.wh===UI.wh;}); }
+function cmp(a,b){ if(M().cold){ return ((a.exp==null?1e18:a.exp)-(b.exp==null?1e18:b.exp))||(a.rcv-b.rcv); } return a.rcv-b.rcv; }
+function lotsFor(skuId,whId){ return S.items.filter(function(i){return i.sku===skuId&&(!whId||i.wh===whId)&&dispatchable(i)>0;}).sort(cmp); }
+function dispQty(skuId,whId){ return lotsFor(skuId,whId).reduce(function(a,i){return a+dispatchable(i);},0); }
+function allocate(skuId,whId,qty){
+  var need=qty,out=[],lots=lotsFor(skuId,whId);
+  for(var i=0;i<lots.length&&need>0;i++){ var take=Math.min(dispatchable(lots[i]),need); out.push({it:lots[i],take:take}); need-=take; }
+  return {lines:out,short:need};
+}
+function lowSku(id){ var k=sku(id); return totalQty(id)<k.reorder; }
+
+function alertList(){
+  var out=[];
+  S.skus.forEach(function(k){
+    var tot=totalQty(k.id); if(tot<k.reorder){
+      var whs=S.items.filter(function(i){return i.sku===k.id;}).map(function(i){return i.wh;});
+      out.push({lvl:'warn',t:k.name+' is below its reorder level',d:num(tot)+' '+k.uom+' on hand across all locations, reorder at '+num(k.reorder),whs:whs});
+    }
+  });
+  if(M().cold){
+    S.items.forEach(function(i){
+      if(i.exp==null) return; var k=sku(i.sku), d=Math.round((i.exp-T0.getTime())/DAY);
+      if(d<0) out.push({lvl:'bad',t:'Lot '+i.lot+' of '+k.name+' has expired',d:num(i.qty)+' '+k.uom+' in '+wh(i.wh).name+'. Held back from dispatch until it is cleared.',whs:[i.wh]});
+      else if(d<=14) out.push({lvl:'warn',t:'Lot '+i.lot+' of '+k.name+' expires in '+d+' days',d:num(i.qty)+' '+k.uom+' in '+wh(i.wh).name+'. Dispatch this lot first.',whs:[i.wh]});
+    });
+  }
+  S.warehouses.forEach(function(w){
+    var u=used(w.id), p=u/w.cap; if(p>=0.85) out.push({lvl:'warn',t:w.name+' is '+Math.round(p*100)+'% full',d:u+' of '+w.cap+' pallet positions in use',whs:[w.id]});
+  });
+  out.sort(function(a,b){ return (a.lvl==='bad'?0:1)-(b.lvl==='bad'?0:1); });
+  return UI.wh==='all'?out:out.filter(function(a){return a.whs.indexOf(UI.wh)>-1;});
+}
+
+/* rendering */
+function render(){
+  document.body.setAttribute('data-mode',S.key);
+  var allUsed=S.warehouses.reduce(function(a,w){return a+used(w.id);},0), allCap=S.warehouses.reduce(function(a,w){return a+w.cap;},0);
+  var bays='<button class="bay" data-act="wh" data-v="all" aria-pressed="'+(UI.wh==='all')+'"><span class="code">ALL</span><span><span class="nm">All locations</span><small>'+S.warehouses.length+' locations</small></span>'+meter(allUsed,allCap)+'</button>';
+  S.warehouses.forEach(function(w){
+    var u=used(w.id);
+    bays+='<button class="bay" data-act="wh" data-v="'+w.id+'" aria-pressed="'+(UI.wh===w.id)+'"><span class="code">'+esc(w.id)+'</span><span><span class="nm">'+esc(w.name)+'</span><small>'+(w.zone?ZONES[w.zone]+', ':'')+u+' of '+w.cap+' positions used</small></span>'+meter(u,w.cap)+'</button>';
+  });
+  $('#bays').innerHTML=bays;
+  var tabs=[['overview','Overview'],['items','Items'],['stock','Stock'],['move','Move stock'],['ledger','Ledger']];
+  $('#tabs').innerHTML=tabs.map(function(t){ return '<button role="tab" data-act="tab" data-v="'+t[0]+'" aria-selected="'+(UI.tab===t[0])+'">'+t[1]+'</button>'; }).join('');
+  var v=$('#view');
+  v.innerHTML = UI.tab==='overview'?vOverview(): UI.tab==='items'?vItems(): UI.tab==='stock'?vStock(): UI.tab==='move'?vMove(): vLedger();
+  if(UI.tab==='move') updatePlan();
+  if(UI.tab==='items'&&UI.addOpen) updateNewItemPlan();
+  if(UI.focus){ var el=document.getElementById(UI.focus); if(el) el.focus(); UI.focus=null; }
+}
+function meter(u,c){ var p=Math.min(100,Math.round(u/c*100)); return '<span class="meter'+(u/c>=0.85?' hot':'')+'"><i style="width:'+p+'%"></i></span>'; }
+function scopeName(){ return UI.wh==='all'?'All locations':wh(UI.wh).name; }
+
+function vOverview(){
+  var it=scoped(), val=it.reduce(function(a,i){return a+i.qty*sku(i.sku).wac;},0);
+  var skus={}; it.forEach(function(i){skus[i.sku]=1;});
+  var u=UI.wh==='all'?S.warehouses.reduce(function(a,w){return a+used(w.id);},0):used(UI.wh);
+  var c=UI.wh==='all'?S.warehouses.reduce(function(a,w){return a+w.cap;},0):wh(UI.wh).cap;
+  var al=alertList();
+  var recent=S.log.filter(logScope).slice(0,5);
+  return '<h2>'+esc(scopeName())+'</h2><p class="sub">'+esc(M().sub)+'</p>'+
+   '<div class="kpis"><div class="kpi"><b>'+inr(val)+'</b><span>Stock value at weighted average cost</span></div>'+
+   '<div class="kpi"><b>'+Object.keys(skus).length+'</b><span>Products in stock</span></div>'+
+   '<div class="kpi"><b>'+u+' of '+c+'</b><span>Pallet positions used</span></div>'+
+   '<div class="kpi"><b>'+al.length+'</b><span>Items needing attention</span></div></div>'+
+   '<div class="split"><div><h3>Needs attention</h3>'+
+   (al.length?'<ul class="list">'+al.map(function(a){return '<li class="'+a.lvl+'"><b>'+esc(a.t)+'</b><small>'+esc(a.d)+'</small></li>';}).join('')+'</ul>':'<p class="empty">Nothing needs attention here.</p>')+
+   '</div><div><h3>Latest movements</h3>'+
+   (recent.length?'<ul class="list">'+recent.map(function(e){return '<li><b>'+esc(e.type)+' '+num(e.qty)+' '+esc(sku(e.sku).uom)+'</b><small>'+esc(sku(e.sku).name)+', '+esc(tstr(e.t))+'</small></li>';}).join('')+'</ul>':'<p class="empty">No movements yet.</p>')+
+   '</div></div>';
+}
+
+/* ─────────── Items: the master ───────────
+   A cold store receives goods that are not on file yet, so adding an item
+   belongs inside receiving rather than being an admin job for later. Otherwise
+   the goods get booked against something approximately right, and the figures
+   are wrong from the first day. */
+function vItems(){
+  var cold=M().cold;
+  var rows=S.skus.map(function(k){
+    var tot=totalQty(k.id), low=tot<k.reorder;
+    return '<tr class="'+(low?'warn':'')+'">'+
+      '<td>'+esc(k.name)+'<small>'+esc(k.id)+'</small></td>'+
+      '<td>'+esc(k.uom)+'<small>'+esc(content(k)||'loose')+'</small></td>'+
+      '<td>'+esc(basisLabel(k))+'<small>'+(k.basis==='content'?'quoted by content':'quoted by the '+esc(one(k.uom)))+'</small></td>'+
+      '<td class="n">'+inrFull(k.wac)+'<small>'+(k.pack?inrFine(perContent(k))+' per '+esc(k.pu):'&nbsp;')+'</small></td>'+
+      '<td class="n">'+num(tot)+(low?'<span class="tag warn">Low</span>':'')+'<small>reorder at '+num(k.reorder)+'</small></td>'+
+      '<td class="n">'+num(k.pp)+'</td>'+
+      (cold?'<td>'+esc(ZONES[k.zone])+'<small>'+k.shelf+' day shelf life</small></td>':'')+
+      '</tr>';
+  }).join('');
+  return '<h2>Items</h2><p class="sub">What the business stocks, how it is packed, and what the supplier quotes on.</p>'+
+    '<div class="tools">'+(UI.addOpen?'':'<button class="btn" data-act="newitem">Add an item</button>')+
+    '<span class="hint" style="margin:0">'+S.skus.length+' items on file</span></div>'+
+    (UI.addOpen?vAddItem():'')+
+    '<div class="scroll"><table class="tbl"><thead><tr>'+
+    '<th>Product</th><th>Counted in</th><th>Priced</th><th class="n">Cost</th>'+
+    '<th class="n">On hand</th><th class="n">Per pallet</th>'+(cold?'<th>Chamber</th>':'')+
+    '</tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+function vAddItem(){
+  var f=UI.ni, cold=M().cold;
+  function sel(id,key,list){
+    return '<select id="'+id+'" data-n="'+key+'">'+list.map(function(x){
+      var v=(typeof x==='string')?x:x[0], t=(typeof x==='string')?x:x[1];
+      return '<option value="'+esc(v)+'"'+(f[key]===v?' selected':'')+'>'+esc(t)+'</option>';
+    }).join('')+'</select>';
+  }
+  return '<div class="move" style="margin-top:4px"><div>'+
+    '<label class="fld"><span>Product name</span><input type="text" id="n-name" data-n="name" value="'+esc(f.name)+'" placeholder="For example, Sweet corn, frozen, 10 kg"></label>'+
+    '<div class="row2">'+
+      '<label class="fld"><span>Counted in</span>'+sel('n-uom','uom',['cartons','boxes','bags','crates'])+'</label>'+
+      '<label class="fld"><span>Units per pallet position</span><input type="number" min="1" id="n-pp" data-n="pp" value="'+esc(f.pp)+'"></label>'+
+    '</div>'+
+    '<div class="row2">'+
+      '<label class="fld"><span>One '+esc(one(f.uom))+' holds</span><input type="number" min="0" step="0.01" id="n-pack" data-n="pack" value="'+esc(f.pack)+'"></label>'+
+      '<label class="fld"><span>of</span>'+sel('n-pu','pu',['kg','litres','pcs','cups','dozen'])+'</label>'+
+    '</div>'+
+    '<label class="fld"><span>Supplier quotes the price</span>'+
+      sel('n-basis','basis',[['pack','per '+one(f.uom)],['content','per '+f.pu]])+'</label>'+
+    '<div class="row2">'+
+      '<label class="fld"><span>Cost '+esc(f.basis==='content'?'per '+f.pu:'per '+one(f.uom))+' (₹)</span><input type="number" min="0" step="1" id="n-cost" data-n="cost" value="'+esc(f.cost)+'"></label>'+
+      '<label class="fld"><span>Reorder below ('+esc(f.uom)+')</span><input type="number" min="0" id="n-reorder" data-n="reorder" value="'+esc(f.reorder)+'"></label>'+
+    '</div>'+
+    (cold?'<div class="row2">'+
+      '<label class="fld"><span>Chamber it needs</span>'+
+        sel('n-zone','zone',Object.keys(ZONES).map(function(z){return [z,ZONES[z]];}))+'</label>'+
+      '<label class="fld"><span>Shelf life (days)</span><input type="number" min="1" id="n-shelf" data-n="shelf" value="'+esc(f.shelf)+'"></label>'+
+    '</div>':'')+
+    '</div><div class="plan" id="nplan" role="status" aria-live="polite"></div></div>';
+}
+
+/* Same plan-before-you-commit idea as a stock movement. Showing the cost in
+   both units is the point: that is where pack size and price basis either
+   agree with each other or obviously do not. */
+function newItemPlan(){
+  var f=UI.ni, cold=M().cold, msgs=[], lines=[];
+  var pack=parseFloat(f.pack), cost=parseFloat(f.cost), pp=parseInt(f.pp,10);
+  if(!String(f.name||'').trim()) msgs.push({l:'bad',t:'Give the product a name.'});
+  if(!(pack>0)) msgs.push({l:'bad',t:'Say what one '+one(f.uom)+' holds.'});
+  if(!(cost>0)) msgs.push({l:'bad',t:'Enter a cost.'});
+  if(!(pp>0)) msgs.push({l:'bad',t:'Enter how many fit a pallet position.'});
+  if(pack>0&&cost>0){
+    var per=f.basis==='content'?cost*pack:cost;
+    lines.push('Counted in <b>'+esc(f.uom)+'</b>, one '+esc(one(f.uom))+' holding <b>'+num2(pack)+' '+esc(f.pu)+'</b>');
+    lines.push('Quoted '+esc(f.basis==='content'?'per '+f.pu:'per '+one(f.uom))+', so one '+esc(one(f.uom))+' costs <b>'+inrFull(per)+'</b>');
+    lines.push('Which is <b>'+inrFine(per/pack)+' per '+esc(f.pu)+'</b>');
+    if(pp>0) lines.push('A full pallet position holds '+num(pp)+' '+esc(f.uom)+', worth '+inrFull(pp*per));
+    if(cold&&f.zone) lines.push('Accepted only into a <b>'+esc(ZONES[f.zone])+'</b> chamber');
+  }
+  return {ok:!msgs.length,msgs:msgs,lines:lines};
+}
+function updateNewItemPlan(){
+  var el=$('#nplan'); if(!el) return;
+  var p=newItemPlan();
+  el.innerHTML='<h3>New item</h3>'+p.msgs.map(function(m){return '<p class="msg '+m.l+'">'+esc(m.t)+'</p>';}).join('')+
+    (p.lines.length?'<ul>'+p.lines.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul>':'')+
+    '<button class="btn" data-act="saveitem"'+(p.ok?'':' disabled')+'>Add item</button>'+
+    '<button class="link" data-act="cancelitem" style="margin-left:14px">Cancel</button>';
+}
+function blankItem(){
+  return {name:'',uom:'cartons',pp:'60',pack:'10',pu:'kg',basis:'pack',
+          cost:'',reorder:'100',zone:'frozen',shelf:'180'};
+}
+function codeFor(name){
+  var w=String(name).replace(/[^A-Za-z ]/g,' ').trim().split(/\s+/);
+  var base=(w[0]||'ITM').slice(0,3).toUpperCase();
+  var z={frozen:'FRZ',chilled:'CHL',cool:'COL'}[UI.ni.zone]||'GEN';
+  var id=base+'-'+z, n=1;
+  while(S.skus.some(function(k){return k.id===id;})){ id=base+(++n)+'-'+z; }
+  return id;
+}
+function saveItem(){
+  var f=UI.ni, cold=M().cold, pack=parseFloat(f.pack), cost=parseFloat(f.cost);
+  var per=f.basis==='content'?cost*pack:cost;
+  var k={id:codeFor(f.name),name:String(f.name).trim(),uom:f.uom,pp:parseInt(f.pp,10),
+         wac:per,reorder:parseInt(f.reorder,10)||0,pack:pack,pu:f.pu,basis:f.basis};
+  if(cold){ k.zone=f.zone; k.shelf=parseInt(f.shelf,10)||180; }
+  S.skus.push(k);
+  UI.addOpen=false; UI.ni=blankItem();
+  return k;
+}
+
+function stockRows(){
+  var q=(UI.q||'').toLowerCase();
+  var rows=scoped().filter(function(i){ var k=sku(i.sku); return !q||(k.name+' '+k.id+' '+i.lot).toLowerCase().indexOf(q)>-1; });
+  rows=rows.map(function(i){
+    var cls='';
+    if(M().cold){ if(expired(i)) cls='bad'; else if(i.exp!=null&&(i.exp-T0.getTime())/DAY<=14) cls='warn'; }
+    if(!cls&&lowSku(i.sku)) cls='warn';
+    return {i:i,cls:cls};
+  });
+  if(UI.alertsOnly) rows=rows.filter(function(r){return r.cls;});
+  rows.sort(function(a,b){ var ka=sku(a.i.sku).name, kb=sku(b.i.sku).name; return ka<kb?-1:ka>kb?1:cmp(a.i,b.i); });
+  return rows;
+}
+function stockBody(){
+  var cold=M().cold, rows=stockRows();
+  if(!rows.length) return '<tr><td colspan="'+(cold?8:8)+'" class="empty">No stock matches. Clear the search or the alerts filter.</td></tr>';
+  return rows.map(function(r){
+    var i=r.i,k=sku(i.sku),w=wh(i.wh);
+    var name='<td>'+esc(k.name)+'<small>'+esc(k.id)+'</small></td>';
+    var loc='<td>'+esc(w.name)+'</td>';
+    var lot='<td>'+esc(i.lot)+'</td>';
+    /* Quantity carries its content alongside: 1,200 cartons is also 12,000 kg,
+       and the second figure is the one a customer asks about. */
+    var qty='<td class="n">'+num(i.qty)+' '+esc(k.uom)+(k.pack?'<small>'+num2(i.qty*k.pack)+' '+esc(k.pu)+'</small>':'')+'</td>';
+    if(cold){
+      var d=Math.round((i.exp-T0.getTime())/DAY), tag=d<0?'<span class="tag bad">Expired</span>':d<=14?'<span class="tag warn">'+d+' days left</span>':'';
+      return '<tr class="'+r.cls+'">'+name+loc+lot+qty+'<td>'+dstr(i.exp)+tag+'</td><td class="n">'+inrFull(k.wac)+'</td><td class="n">'+inrFull(i.qty*k.wac)+'</td></tr>';
+    }
+    var res=i.blocked?num(i.blocked)+'<small>'+esc(i.project)+' <button class="link" data-act="release" data-id="'+i.id+'">Release</button></small>':'0';
+    return '<tr class="'+r.cls+'">'+name+loc+lot+qty+'<td class="n">'+res+'</td><td class="n">'+num(avail(i))+'</td><td class="n">'+inrFull(k.wac)+'</td><td class="n">'+inrFull(i.qty*k.wac)+'</td></tr>';
+  }).join('');
+}
+function vStock(){
+  var cold=M().cold;
+  var head=cold?['Product','Location',M().lotLabel,'Quantity','Expiry','WAC per unit','Value']:['Product','Location',M().lotLabel,'On hand','Reserved','Available','WAC per unit','Value'];
+  var nums=cold?[3,5,6]:[3,4,5,6,7];
+  return '<h2>'+esc(scopeName())+'</h2><p class="sub">Every lot in every location. Highlighted rows need attention.</p>'+
+   '<div class="tools"><label class="fld" style="margin:0;min-width:240px"><span style="position:absolute;left:-9999px">Search stock</span><input type="search" id="q" placeholder="Search product, code or lot" value="'+esc(UI.q||'')+'"></label>'+
+   '<label class="chk"><input type="checkbox" id="alertsOnly"'+(UI.alertsOnly?' checked':'')+'> Show only rows needing attention</label></div>'+
+   '<div class="scroll"><table class="tbl"><thead><tr>'+head.map(function(h,ix){return '<th'+(nums.indexOf(ix)>-1?' class="n"':'')+'>'+h+'</th>';}).join('')+'</tr></thead><tbody id="stockbody">'+stockBody()+'</tbody></table></div>';
+}
+
+function logScope(e){ return UI.wh==='all'||e.from===UI.wh||e.to===UI.wh; }
+function vLedger(){
+  var rows=S.log.filter(logScope);
+  return '<h2>Ledger</h2><p class="sub">Every receipt, issue, transfer and reservation, newest first.</p>'+
+   '<div class="scroll" style="margin-top:16px"><table class="tbl"><thead><tr><th>When</th><th>Action</th><th>Product</th><th class="n">Quantity</th><th>Location</th><th>Note</th></tr></thead><tbody>'+
+   (rows.length?rows.map(function(e){
+     var k=sku(e.sku), loc=e.type==='Transfer'?esc(e.from)+' to '+esc(e.to):esc(e.from||e.to);
+     return '<tr><td>'+esc(tstr(e.t))+'</td><td>'+esc(e.type)+'</td><td>'+esc(k.name)+'</td><td class="n">'+num(e.qty)+' '+esc(k.uom)+'</td><td>'+loc+'</td><td>'+esc(e.detail)+'</td></tr>';
+   }).join(''):'<tr><td colspan="6" class="empty">No movements for this location yet.</td></tr>')+
+   '</tbody></table></div>';
+}
+
+/* move stock */
+function opsAvail(){ return M().cold?['receive','issue','transfer']:['receive','issue','transfer','reserve']; }
+var OPNAME={receive:'Receive',issue:'Issue',transfer:'Transfer',reserve:'Reserve'};
+function skusFor(op){ return op==='receive'?S.skus:S.skus.filter(function(k){return dispQty(k.id)>0;}); }
+function whsFor(op,skuId){ return op==='receive'?S.warehouses:S.warehouses.filter(function(w){return dispQty(skuId,w.id)>0;}); }
+function setDefaults(keepSku){
+  var op=UI.op, f=UI.f, cold=M().cold;
+  var list=skusFor(op); if(!list.length) list=S.skus;
+  if(!keepSku||!list.some(function(k){return k.id===f.sku;})) f.sku=list[0].id;
+  var k=sku(f.sku), ws=whsFor(op,f.sku); if(!ws.length) ws=S.warehouses;
+  if(op==='receive'&&cold){ var ok=ws.filter(function(w){return w.zone===k.zone;}); if(ok.length) ws=ok; }
+  if(!ws.some(function(w){return w.id===f.wh;})) f.wh=ws[0].id;
+  if(op==='transfer'){
+    var tos=S.warehouses.filter(function(w){return w.id!==f.wh;});
+    var pref=cold?tos.filter(function(w){return w.zone===k.zone;}):tos;
+    var pick=(pref.length?pref:tos)[0]; if(!f.to||f.to===f.wh||!tos.some(function(w){return w.id===f.to;})) f.to=pick.id;
+  }
+  var cap=op==='receive'?k.pp:Math.max(1,Math.min(k.pp,dispQty(f.sku,f.wh)));
+  f.qty=String(cap);
+  /* The cost field is pre-filled in the unit the supplier quotes in, so what
+     is typed matches what is on the invoice. */
+  f.cost=String(k.basis==='content'&&k.pack?Math.round(k.wac/k.pack*100)/100:k.wac);
+  f.lot=(cold?'L-':'SH-')+(2700+uid);
+  f.exp=cold?iso(day(k.shelf)):'';
+  f.project='';
+}
+function opts(list,sel,labeler){ return list.map(function(x){ return '<option value="'+esc(x.id)+'"'+(x.id===sel?' selected':'')+'>'+esc(labeler(x))+'</option>'; }).join(''); }
+function vMove(){
+  var op=UI.op, f=UI.f, cold=M().cold, k=sku(f.sku);
+  var skuList=skusFor(op), whList=whsFor(op,f.sku);
+  var h='<h2>Move stock</h2><p class="sub">Record a movement. The plan shows exactly what will change before anything is saved.</p>';
+  h+='<div class="move"><div style="margin-top:2px"><div class="seg" role="group" aria-label="Movement type" style="display:inline-flex;margin:12px 0 18px">'+
+    opsAvail().map(function(o){return '<button data-act="op" data-v="'+o+'" aria-pressed="'+(op===o)+'">'+OPNAME[o]+'</button>';}).join('')+'</div>';
+  h+='<label class="fld"><span>Product</span><select id="f-sku" data-f="sku">'+opts(skuList,f.sku,function(x){return x.name;})+'</select>'+
+     (op==='receive'?'<div class="hint" style="margin:6px 0 0">Goods arrived that are not on file? <button class="link" data-act="newitem">Add an item</button></div>':'')+
+     '</label>';
+  if(op==='receive'){
+    h+='<label class="fld"><span>Receive into</span><select id="f-wh" data-f="wh">'+opts(whList,f.wh,function(w){return w.name+(w.zone?' ('+ZONES[w.zone]+')':'');})+'</select></label>';
+  } else if(whList.length){
+    h+='<label class="fld"><span>'+(op==='transfer'?'Move from':op==='reserve'?'Reserve from':'Issue from')+'</span><select id="f-wh" data-f="wh">'+opts(whList,f.wh,function(w){return w.name+' ('+num(dispQty(f.sku,w.id))+' '+k.uom+' available)';})+'</select></label>';
+  }
+  if(op==='transfer'){
+    h+='<label class="fld"><span>Move to</span><select id="f-to" data-f="to">'+opts(S.warehouses.filter(function(w){return w.id!==f.wh;}),f.to,function(w){return w.name+(w.zone?' ('+ZONES[w.zone]+')':'');})+'</select></label>';
+  }
+  h+='<label class="fld"><span>Quantity ('+esc(k.uom)+')</span><input type="number" min="1" step="1" id="f-qty" data-f="qty" value="'+esc(f.qty)+'">'+
+     (k.pack?'<div class="hint" style="margin:6px 0 0">One '+esc(one(k.uom))+' holds '+num2(k.pack)+' '+esc(k.pu)+'</div>':'')+'</label>';
+  if(op==='receive'){
+    h+='<div class="row2"><label class="fld"><span>'+M().lotLabel+' code</span><input type="text" id="f-lot" data-f="lot" value="'+esc(f.lot)+'"></label>'+
+       '<label class="fld"><span>Cost '+esc(k.basis==='content'&&k.pack?'per '+k.pu:'per '+one(k.uom))+' (₹)</span><input type="number" min="1" step="0.01" id="f-cost" data-f="cost" value="'+esc(f.cost)+'"></label></div>';
+    if(cold) h+='<label class="fld"><span>Expiry date</span><input type="date" id="f-exp" data-f="exp" value="'+esc(f.exp)+'"></label>';
+  }
+  if(op==='reserve'){
+    h+='<label class="fld"><span>Project name</span><input type="text" id="f-project" data-f="project" value="'+esc(f.project)+'" placeholder="For example, Lakeview Residences"></label>'+
+       '<p class="hint">Reserved stock is held for the project and can’t be issued or transferred until it is released.</p>';
+  }
+  h+='</div><div class="plan" id="plan" role="status" aria-live="polite"></div></div>';
+  return h;
+}
+
+/* One place converts the quoted price into a cost per counted unit, so the
+   ledger, the valuation and the plan can never disagree about it. */
+function perUnitCost(k,typed){ return (k.basis==='content'&&k.pack)?typed*k.pack:typed; }
+
+function plan(){
+  var op=UI.op, f=UI.f, cold=M().cold, k=sku(f.sku), w=wh(f.wh), msgs=[], lines=[], q=parseInt(f.qty,10), title='', apply=null;
+  function bad(t){ msgs.push({l:'bad',t:t}); }
+  if(!k||!w) return {ok:false,title:'Nothing to move',msgs:[{l:'info',t:'There is no stock available for this movement type.'}],lines:[]};
+  if(!(q>0)) return {ok:false,title:'Plan',msgs:[{l:'info',t:'Enter a quantity to see the plan.'}],lines:[]};
+  if(op==='receive'){
+    title='Receipt';
+    var typed=parseFloat(f.cost), lot=(f.lot||'').trim();
+    var cost=perUnitCost(k,typed);
+    if(!lot) bad('Add a '+M().lotLabel.toLowerCase()+' code.');
+    if(!(typed>0)) bad('Enter a unit cost.');
+    if(cold){ if(k.zone!==w.zone) bad(k.name+' must go into a '+ZONES[k.zone]+' chamber, not '+w.name+'.'); if(!f.exp) bad('Add an expiry date.'); else if(new Date(f.exp).getTime()<=T0.getTime()) bad('The expiry date must be in the future.'); }
+    var free=w.cap-used(w.id), need=Math.ceil(q/k.pp);
+    if(need>free) bad(w.name+' has '+free+' free pallet positions and this receipt needs '+need+'.');
+    var tot=totalQty(k.id), nw=cost>0?(tot*k.wac+q*cost)/(tot+q):k.wac;
+    lines.push('Add <b>'+num(q)+' '+esc(k.uom)+'</b> to '+esc(w.name)+(lot?', '+M().lotLabel.toLowerCase()+' '+esc(lot):''));
+    if(k.pack) lines.push('That is <b>'+num2(q*k.pack)+' '+esc(k.pu)+'</b> of product');
+    if(cost>0){
+      if(k.basis==='content'&&k.pack) lines.push('At '+inrFine(typed)+' per '+esc(k.pu)+', one '+esc(one(k.uom))+' costs <b>'+inrFull(cost)+'</b>');
+      lines.push('Weighted average cost moves from <b>'+inrFull(k.wac)+'</b> to <b>'+inrFull(nw)+'</b> per '+esc(one(k.uom)));
+      lines.push('Stock value rises by <b>'+inrFull(q*cost)+'</b>');
+    }
+    lines.push('Uses about '+need+' pallet position'+(need>1?'s':'')+', '+free+' free');
+    apply=function(){
+      var typed2=parseFloat(f.cost), cost2=perUnitCost(k,typed2), lot2=f.lot.trim(), exp=cold?new Date(f.exp).getTime():null;
+      var nw2=(totalQty(k.id)*k.wac+q*cost2)/(totalQty(k.id)+q);
+      var row=S.items.filter(function(i){return i.sku===k.id&&i.wh===w.id&&i.lot===lot2&&i.exp===exp;})[0];
+      if(row) row.qty+=q; else S.items.push({id:uid++,sku:k.id,wh:w.id,lot:lot2,qty:q,blocked:0,project:'',rcv:Date.now(),exp:exp});
+      k.wac=nw2;
+      S.log.unshift({t:Date.now(),type:'Receive',sku:k.id,qty:q,from:'',to:w.id,detail:'Lot '+lot2+' at '+inrFull(cost2)+' per '+one(k.uom)});
+      return 'Received '+num(q)+' '+k.uom+' into '+w.name+'.';
+    };
+  } else {
+    var a=allocate(k.id,f.wh,q), isTr=op==='transfer', isRes=op==='reserve', dest=isTr?wh(f.to):null;
+    title=isTr?'Transfer plan':isRes?'Reservation plan':'Pick plan';
+    if(a.short>0) bad('Only '+num(q-a.short)+' '+k.uom+' can be '+(isRes?'reserved':'dispatched')+' from '+w.name+'.'+(cold?' Expired lots are held back.':''));
+    if(isRes&&!(f.project||'').trim()) bad('Add a project name.');
+    if(isTr){
+      if(!dest) bad('Choose a destination.');
+      else{
+        if(cold&&k.zone!==dest.zone) bad(k.name+' needs a '+ZONES[k.zone]+' chamber. '+dest.name+' is '+ZONES[dest.zone]+'.');
+        var fr=dest.cap-used(dest.id), nd=Math.ceil(q/k.pp);
+        if(nd>fr) bad(dest.name+' has '+fr+' free pallet positions and this transfer needs '+nd+'.');
+      }
+    }
+    lines.push('Taking stock <b>'+M().rule+'</b>:');
+    a.lines.forEach(function(x){ lines.push(num(x.take)+' '+esc(k.uom)+' from '+M().lotLabel.toLowerCase()+' '+esc(x.it.lot)+(cold?', expires '+dstr(x.it.exp):'')); });
+    if(k.pack) lines.push('Total <b>'+num2(q*k.pack)+' '+esc(k.pu)+'</b>');
+    if(isTr&&dest) lines.push('Lots keep their codes and expiry dates at '+esc(dest.name));
+    if(op==='issue') lines.push('Stock value falls by <b>'+inrFull(q*k.wac)+'</b> at the current average cost');
+    apply=function(){
+      var al=allocate(k.id,f.wh,q), moved=[];
+      al.lines.forEach(function(x){
+        if(isRes){ x.it.blocked+=x.take; var p=f.project.trim(); if(!x.it.project) x.it.project=p; else if(x.it.project.split(' + ').indexOf(p)<0) x.it.project+=' + '+p; return; }
+        x.it.qty-=x.take; moved.push(x);
+      });
+      if(isTr){
+        moved.forEach(function(x){
+          var row=S.items.filter(function(i){return i.sku===k.id&&i.wh===dest.id&&i.lot===x.it.lot&&i.exp===x.it.exp;})[0];
+          if(row) row.qty+=x.take; else S.items.push({id:uid++,sku:k.id,wh:dest.id,lot:x.it.lot,qty:x.take,blocked:0,project:'',rcv:x.it.rcv,exp:x.it.exp});
+        });
+      }
+      S.items=S.items.filter(function(i){return i.qty>0||i.blocked>0;});
+      S.log.unshift({t:Date.now(),type:OPNAME[op],sku:k.id,qty:q,from:f.wh,to:isTr?dest.id:'',detail:isRes?'Held for '+f.project.trim():isTr?'Moved '+w.name+' to '+dest.name:'Dispatched, '+M().rule});
+      return (isRes?'Reserved ':isTr?'Transferred ':'Issued ')+num(q)+' '+k.uom+'.';
+    };
+  }
+  return {ok:!msgs.some(function(m){return m.l==='bad';}),title:title,msgs:msgs,lines:lines,apply:apply};
+}
+function updatePlan(){
+  var p=plan(), el=$('#plan'); if(!el) return;
+  el.innerHTML='<h3>'+esc(p.title)+'</h3>'+p.msgs.map(function(m){return '<p class="msg '+m.l+'">'+esc(m.t)+'</p>';}).join('')+
+   (p.lines.length?'<ul>'+p.lines.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul>':'')+
+   '<button class="btn" data-act="confirm"'+(p.ok?'':' disabled')+'>Confirm '+OPNAME[UI.op].toLowerCase()+'</button>';
+}
+
+/* actions */
+function toast(t){ var el=$('#toast'); el.textContent=t; el.classList.add('on'); clearTimeout(toast.h); toast.h=setTimeout(function(){el.classList.remove('on');},2600); }
+function newUI(){ UI={wh:'all',tab:'overview',op:'transfer',f:{sku:'',wh:'',to:'',qty:'',lot:'',cost:'',exp:'',project:''},q:'',alertsOnly:false,focus:null,addOpen:false,ni:blankItem()}; setDefaults(false); }
+function setMode(k){ S=seed(k); newUI(); $('#toast').classList.remove('on'); render(); }
+
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]'); if(!b) return; var a=b.dataset.act;
+  if(a==='mode'){ if(b.dataset.v!==S.key) setMode(b.dataset.v); }
+  else if(a==='wh'){ UI.wh=b.dataset.v; render(); }
+  else if(a==='tab'){ UI.tab=b.dataset.v; render(); }
+  else if(a==='op'){ UI.op=b.dataset.v; setDefaults(true); render(); }
+  else if(a==='reset'){ setMode(S.key); toast('Demo reset to its starting data.'); }
+  else if(a==='newitem'){ UI.addOpen=true; UI.tab='items'; UI.focus='n-name'; render(); }
+  else if(a==='cancelitem'){ UI.addOpen=false; UI.ni=blankItem(); render(); }
+  else if(a==='saveitem'){
+    var p=newItemPlan();
+    if(p.ok){
+      var k=saveItem();
+      /* Straight into receiving it, since that is why the item was added. */
+      UI.tab='move'; UI.op='receive'; UI.f.sku=k.id; setDefaults(true); render();
+      toast(k.name+' added as '+k.id+'. Now receive it.');
+    }
+  }
+  else if(a==='release'){ var id=+b.dataset.id, it=S.items.filter(function(i){return i.id===id;})[0]; if(it){ var q=it.blocked, pr=it.project; it.blocked=0; it.project=''; S.log.unshift({t:Date.now(),type:'Release',sku:it.sku,qty:q,from:it.wh,to:'',detail:'Released from '+pr}); render(); toast('Released '+num(q)+' '+sku(it.sku).uom+' from '+pr+'.'); } }
+  else if(a==='confirm'){ var p2=plan(); if(p2.ok){ var m=p2.apply(); setDefaults(true); render(); toast(m); } }
+});
+document.addEventListener('input',function(e){
+  var el=e.target;
+  if(el.id==='q'){ UI.q=el.value; $('#stockbody').innerHTML=stockBody(); }
+  else if(el.dataset&&el.dataset.n&&el.tagName==='INPUT'){ UI.ni[el.dataset.n]=el.value; updateNewItemPlan(); }
+  else if(el.dataset&&el.dataset.f&&el.tagName==='INPUT'){ UI.f[el.dataset.f]=el.value; updatePlan(); }
+});
+document.addEventListener('change',function(e){
+  var el=e.target;
+  if(el.id==='alertsOnly'){ UI.alertsOnly=el.checked; $('#stockbody').innerHTML=stockBody(); }
+  else if(el.tagName==='SELECT'&&el.dataset.n){
+    /* Unit and basis change the LABELS around them, so re-render rather than
+       just recompute the plan. */
+    UI.ni[el.dataset.n]=el.value; UI.focus=el.id; render();
+  }
+  else if(el.tagName==='SELECT'&&el.dataset.f){
+    var key=el.dataset.f; UI.f[key]=el.value;
+    if(key==='sku') setDefaults(true);
+    else if(key==='wh'){ var k=sku(UI.f.sku); if(UI.op!=='receive') UI.f.qty=String(Math.max(1,Math.min(k.pp,dispQty(UI.f.sku,UI.f.wh)))); if(UI.op==='transfer'){ setToAfterFrom(); } }
+    UI.focus=el.id; render();
+  } else if(el.dataset&&el.dataset.f&&el.type==='date'){ UI.f[el.dataset.f]=el.value; updatePlan(); }
+});
+function setToAfterFrom(){
+  var f=UI.f,k=sku(f.sku),tos=S.warehouses.filter(function(w){return w.id!==f.wh;});
+  if(!tos.some(function(w){return w.id===f.to;})){ var pref=M().cold?tos.filter(function(w){return w.zone===k.zone;}):tos; f.to=(pref.length?pref:tos)[0].id; }
+}
+
+setMode('cold');
+})();
+</script>
+</body>
+</html>
