@@ -203,10 +203,15 @@ function $(s){ return document.querySelector(s); }
                receipt -- which is where the errors come from.
    Stock is always counted and valued per counted unit whichever basis
    applies; the basis only decides what you type when goods arrive. */
-function one(u){ return String(u||'').replace(/s$/,''); }
+/* Stripping a trailing "s" turns boxes into "boxe" and leaves "per cups".
+   The vocabulary here is small and fixed, so spell it out rather than guess. */
+var SING={cartons:'carton',boxes:'box',bags:'bag',crates:'crate',rolls:'roll',
+          sheets:'sheet',pcs:'pc',cups:'cup',litres:'litre',metres:'metre',
+          kg:'kg',dozen:'dozen',sqm:'sqm'};
+function one(u){ u=String(u||''); return SING[u]||u.replace(/s$/,''); }
 function content(k){ return k.pack?num2(k.pack)+' '+k.pu+' per '+one(k.uom):''; }
 function perContent(k){ return k.pack?k.wac/k.pack:null; }
-function basisLabel(k){ return k.basis==='content'?('per '+k.pu):('per '+one(k.uom)); }
+function basisLabel(k){ return k.basis==='content'?('per '+one(k.pu)):('per '+one(k.uom)); }
 
 var ZONES={frozen:'Frozen, −18°C',chilled:'Chilled, 2 to 4°C',cool:'Cool, 12 to 14°C'};
 var MODES={
@@ -395,7 +400,7 @@ function vItems(){
       '<td>'+esc(k.name)+'<small>'+esc(k.id)+'</small></td>'+
       '<td>'+esc(k.uom)+'<small>'+esc(content(k)||'loose')+'</small></td>'+
       '<td>'+esc(basisLabel(k))+'<small>'+(k.basis==='content'?'quoted by content':'quoted by the '+esc(one(k.uom)))+'</small></td>'+
-      '<td class="n">'+inrFull(k.wac)+'<small>'+(k.pack?inrFine(perContent(k))+' per '+esc(k.pu):'&nbsp;')+'</small></td>'+
+      '<td class="n">'+inrFull(k.wac)+'<small>'+(k.pack?inrFine(perContent(k))+' per '+esc(one(k.pu)):'&nbsp;')+'</small></td>'+
       '<td class="n">'+num(tot)+(low?'<span class="tag warn">Low</span>':'')+'<small>reorder at '+num(k.reorder)+'</small></td>'+
       '<td class="n">'+num(k.pp)+'</td>'+
       (cold?'<td>'+esc(ZONES[k.zone])+'<small>'+k.shelf+' day shelf life</small></td>':'')+
@@ -430,9 +435,9 @@ function vAddItem(){
       '<label class="fld"><span>of</span>'+sel('n-pu','pu',['kg','litres','pcs','cups','dozen'])+'</label>'+
     '</div>'+
     '<label class="fld"><span>Supplier quotes the price</span>'+
-      sel('n-basis','basis',[['pack','per '+one(f.uom)],['content','per '+f.pu]])+'</label>'+
+      sel('n-basis','basis',[['pack','per '+one(f.uom)],['content','per '+one(f.pu)]])+'</label>'+
     '<div class="row2">'+
-      '<label class="fld"><span>Cost '+esc(f.basis==='content'?'per '+f.pu:'per '+one(f.uom))+' (₹)</span><input type="number" min="0" step="1" id="n-cost" data-n="cost" value="'+esc(f.cost)+'"></label>'+
+      '<label class="fld"><span>Cost '+esc(f.basis==='content'?'per '+one(f.pu):'per '+one(f.uom))+' (₹)</span><input type="number" min="0" step="1" id="n-cost" data-n="cost" value="'+esc(f.cost)+'"></label>'+
       '<label class="fld"><span>Reorder below ('+esc(f.uom)+')</span><input type="number" min="0" id="n-reorder" data-n="reorder" value="'+esc(f.reorder)+'"></label>'+
     '</div>'+
     (cold?'<div class="row2">'+
@@ -456,8 +461,8 @@ function newItemPlan(){
   if(pack>0&&cost>0){
     var per=f.basis==='content'?cost*pack:cost;
     lines.push('Counted in <b>'+esc(f.uom)+'</b>, one '+esc(one(f.uom))+' holding <b>'+num2(pack)+' '+esc(f.pu)+'</b>');
-    lines.push('Quoted '+esc(f.basis==='content'?'per '+f.pu:'per '+one(f.uom))+', so one '+esc(one(f.uom))+' costs <b>'+inrFull(per)+'</b>');
-    lines.push('Which is <b>'+inrFine(per/pack)+' per '+esc(f.pu)+'</b>');
+    lines.push('Quoted '+esc(f.basis==='content'?'per '+one(f.pu):'per '+one(f.uom))+', so one '+esc(one(f.uom))+' costs <b>'+inrFull(per)+'</b>');
+    lines.push('Which is <b>'+inrFine(per/pack)+' per '+esc(one(f.pu))+'</b>');
     if(pp>0) lines.push('A full pallet position holds '+num(pp)+' '+esc(f.uom)+', worth '+inrFull(pp*per));
     if(cold&&f.zone) lines.push('Accepted only into a <b>'+esc(ZONES[f.zone])+'</b> chamber');
   }
@@ -596,7 +601,7 @@ function vMove(){
      (k.pack?'<div class="hint" style="margin:6px 0 0">One '+esc(one(k.uom))+' holds '+num2(k.pack)+' '+esc(k.pu)+'</div>':'')+'</label>';
   if(op==='receive'){
     h+='<div class="row2"><label class="fld"><span>'+M().lotLabel+' code</span><input type="text" id="f-lot" data-f="lot" value="'+esc(f.lot)+'"></label>'+
-       '<label class="fld"><span>Cost '+esc(k.basis==='content'&&k.pack?'per '+k.pu:'per '+one(k.uom))+' (₹)</span><input type="number" min="1" step="0.01" id="f-cost" data-f="cost" value="'+esc(f.cost)+'"></label></div>';
+       '<label class="fld"><span>Cost '+esc(k.basis==='content'&&k.pack?'per '+one(k.pu):'per '+one(k.uom))+' (₹)</span><input type="number" min="1" step="0.01" id="f-cost" data-f="cost" value="'+esc(f.cost)+'"></label></div>';
     if(cold) h+='<label class="fld"><span>Expiry date</span><input type="date" id="f-exp" data-f="exp" value="'+esc(f.exp)+'"></label>';
   }
   if(op==='reserve'){
@@ -629,7 +634,7 @@ function plan(){
     lines.push('Add <b>'+num(q)+' '+esc(k.uom)+'</b> to '+esc(w.name)+(lot?', '+M().lotLabel.toLowerCase()+' '+esc(lot):''));
     if(k.pack) lines.push('That is <b>'+num2(q*k.pack)+' '+esc(k.pu)+'</b> of product');
     if(cost>0){
-      if(k.basis==='content'&&k.pack) lines.push('At '+inrFine(typed)+' per '+esc(k.pu)+', one '+esc(one(k.uom))+' costs <b>'+inrFull(cost)+'</b>');
+      if(k.basis==='content'&&k.pack) lines.push('At '+inrFine(typed)+' per '+esc(one(k.pu))+', one '+esc(one(k.uom))+' costs <b>'+inrFull(cost)+'</b>');
       lines.push('Weighted average cost moves from <b>'+inrFull(k.wac)+'</b> to <b>'+inrFull(nw)+'</b> per '+esc(one(k.uom)));
       lines.push('Stock value rises by <b>'+inrFull(q*cost)+'</b>');
     }
